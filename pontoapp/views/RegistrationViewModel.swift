@@ -18,16 +18,18 @@ class RegistrationViewModel: ObservableObject {
     @Published var isCheckedInToday: Bool = false
     
     private var studentId: String = ""
+    private var studentName: String = ""
 
     private let webService = WebService()
     private let dropboxService = DropboxService()
     
     init(){
-        getStudentId()
+        intialConfig()
     }
     
-    func getStudentId(){
+    func intialConfig(){
         self.studentId = UserDefaults.standard.string(forKey: "studentId") ?? ""
+        self.studentName = UserDefaults.standard.string(forKey: "name") ?? ""
     }
     
     func loadInitialData() {
@@ -76,7 +78,7 @@ class RegistrationViewModel: ObservableObject {
                 let fileData = try Data(contentsOf: file)
                 let fileName = file.lastPathComponent
                 
-                dropboxService.uploadFileAndGetLink(fileData: fileData, fileName: fileName){ link in
+                dropboxService.uploadFileAndGetLink(studentId: self.studentId, studentName: self.studentName, fileData: fileData, fileName: fileName){ link in
                     if let link = link{
                         uploadedLinks.append(link)
                     }
@@ -102,8 +104,9 @@ class RegistrationViewModel: ObservableObject {
     
     func getCalendarInfos(month: Int, year: Int){
         print("-------- O STUDENT ID É: \(self.studentId) ---------")
+        print("-------- O STUDENT NAME É: \(self.studentName) ---------")
         
-        webService.fetchCalendar(student: self.studentId, month: month, year: year) { [weak self] result in
+        webService.fetchCalendar(studentId: self.studentId, month: month, year: year) { [weak self] result in
             DispatchQueue.main.async {
                 self?.isLoading = false
                 

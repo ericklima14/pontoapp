@@ -22,17 +22,18 @@ class LocationManager: NSObject, ObservableObject{
         manager.startUpdatingLocation()
         
         requestSendUserNotification()
+        monitorarGeofence()
     }
     
     func requestLocation(){
-        manager.requestWhenInUseAuthorization()
+        manager.requestAlwaysAuthorization()
     }
     
     
     func monitorarGeofence(){
         //coordenadas da academy
-        let center = CLLocationCoordinate2D(latitude: -23.669090, longitude: -46.699255)
-        let maxRadius = 5.0
+        let center = CLLocationCoordinate2D(latitude: -23.668777973166964, longitude: -46.6992374689516)
+        let maxRadius = 20.0
         
         let region = CLCircularRegion(center: center, radius: maxRadius, identifier: "Academy")
         region.notifyOnEntry = true
@@ -107,12 +108,12 @@ extension LocationManager: CLLocationManagerDelegate{
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         
         if region.identifier == "Academy"{
-            if isOnTime(){
+            //if isOnTime(){
                 print("ENTROU na região no horário: \(region.identifier)")
                 sendUserNotification()
-            } else {
-                print("Entrou na região, mas fora do horário (13:30 - 14:30).")
-            }
+            //} else {
+//                print("Entrou na região, mas fora do horário (13:30 - 14:30).")
+//            }
         }
         
     }

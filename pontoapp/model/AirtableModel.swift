@@ -17,6 +17,16 @@ struct Event: Codable, Identifiable {
     let createdTime: String
 }
 
+struct StudentRecord: Codable, Identifiable {
+    let appleID: String
+    let name: String
+    let memojiURL: [String]
+    let email: String
+    
+    var id: String {
+        return appleID
+    }
+}
 
 struct EventFields: Codable {
     let name: String

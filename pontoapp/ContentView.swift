@@ -7,10 +7,31 @@
 
 import SwiftUI
 
+enum OnboardingStep {
+    case location
+    case contacts
+    case login
+    case completed
+}
+
 struct ContentView: View {
-    
-    @AppStorage("userId") var userId: String?
+    @AppStorage("appleID") var userId: String?
+    @AppStorage("email") var email: String?
+    @AppStorage("hasSelectedMemoji") var hasSelectedMemoji: Bool = false
     @ObservedObject var locationManager = LocationManager.shared
+    
+    private var currentStep: OnboardingStep {
+        if userId != nil && locationManager.userLocation != nil && hasSelectedMemoji {
+            return .completed
+        }
+        
+        if userId != nil && locationManager.userLocation != nil { return .contacts
+        }
+        
+        if locationManager.userLocation == nil { return .location }
+        
+        return .login
+    }
     
     private var isSignedIn: Bool {
         return userId != nil
@@ -27,14 +48,29 @@ struct ContentView: View {
     }
     
     var body: some View {
-        Group {
-            if isSignedIn {
-                AppTabBarView()
-            } else if locationManager.userLocation == nil {
-                LocationRequestView()
-            } else {
-                LoginView()
+        ZStack{
+            Color.bg950.ignoresSafeArea()
+            
+            Group {
+                switch currentStep {
+                    case .location:
+                        LocationRequestView()
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)
+                        ))
+                    case .contacts:
+                        ProfileSetupView(userEmailApple: email ?? "")
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                    case .login:
+                        LoginView()
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                    case .completed:
+                        AppTabBarView()
+                        .transition(.opacity)
+                }
             }
+            .animation(.easeInOut(duration: 0.5), value: currentStep)
         }
     }
     

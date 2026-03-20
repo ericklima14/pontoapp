@@ -9,7 +9,6 @@ import SwiftUI
 import AuthenticationServices
 
 struct LoginView: View {
-    
     @State private var errorMessage = ""
     
     var body: some View {
@@ -46,54 +45,101 @@ struct LoginView: View {
 }
 
 struct SignButtonView : View {
-    @AppStorage("userId") var userId: String?
+    @AppStorage("appleID") var appleID: String?
     @AppStorage("email") var email: String?
     @AppStorage("name") var name: String?
+    @AppStorage("studentId") var studentId: String?
     
     @Binding var errorMessage: String
+    private let webService = WebService()
+    
+    @State private var isAuthenticating: Bool = false
     
     var body: some View {
         
-        SignInWithAppleButton(.signIn) { request in
-            request.requestedScopes = [.email, .fullName]
-        } onCompletion: { result in
-            switch result {
-                case .success(let authResults):
-                    switch authResults.credential {
-                    case let credential as ASAuthorizationAppleIDCredential:
-                        let userId = credential.user
-                        let email = credential.email
-                        let name = credential.fullName?.givenName
-                        
-                        self.userId = userId
-                        self.email = email ?? ""
-                        self.name = name ?? ""
-                        
-                        print("User ID: \(userId)")
-                        print("Email: \(email ?? "")")
-                        print("Name: \(name ?? "")")
-                        
-                    default:
-                        break
+        VStack{
+            if isAuthenticating {
+                ProgressView("Conectando ao banco...")
+                    .progressViewStyle(CircularProgressViewStyle(tint: .gradientEnd))
+                    .frame(height: 50)
+                    .padding()
+            }
+            else {
+                SignInWithAppleButton(.signIn) { request in
+                    request.requestedScopes = [.email, .fullName]
+                } onCompletion: { result in
+                    switch result {
+                        case .success(let authResults):
+                            switch authResults.credential {
+                            case let credential as ASAuthorizationAppleIDCredential:
+                                isAuthenticating = true
+                                
+                                let userId = credential.user
+                                let email = credential.email ?? ""
+                                var name: String = ""
+                                
+                                let firstName = credential.fullName?.givenName
+                                let middleName = credential.fullName?.middleName
+                                let lastName = credential.fullName?.familyName
+                                
+                                if let middleNameExists = middleName {
+                                    name = "\(firstName ?? "") \(middleNameExists) \(lastName ?? "")"
+                                } else {
+                                    name = "\(firstName ?? "") \(lastName ?? "")"
+                                }
+                                
+                                self.appleID = userId
+                                if !name.isEmpty { self.name = name }
+                                if !email.isEmpty { self.email = email }
+                                
+                                registerOrFetchStudent(
+                                    name: self.name ?? "Aluno sem nome",
+                                    email: self.email ?? "Aluno sem email",
+                                    appleId: userId
+                                )
+    //
+    //                            print("User ID: \(userId)")
+    //                            print("Email: \(email)")
+    //                            print("Name: \(name)")
+                                
+                            default:
+                                break
+                            }
+                            
+                            
+                        case .failure(let error):
+                    if (error as NSError).code != ASAuthorizationError.canceled.rawValue {
+                            errorMessage = "Erro ao realizar o login. Tente novamente. \(error.localizedDescription)"
+                        }
                     }
-                    
-                    
-                case .failure(let error):
-                    errorMessage = "Erro ao realizar o login. Tente novamente. \(error.localizedDescription)"
-                
-                    
+                }
+                .signInWithAppleButtonStyle(.white)
+                .frame(height: 50)
+                .padding()
             }
             
-                
         }
-        .signInWithAppleButtonStyle(.white)
-        .frame(height: 50)
-        .padding()
-        
     }
-        
+    
+    func registerOrFetchStudent(name: String, email: String, appleId: String){
+        webService.authenticateStudent(appleID: appleId, name: name, email: email) { result in
+            DispatchQueue.main.async {
+                self.isAuthenticating = false
+
+                switch result {
+                case .success(let airtableRecordId):
+                    print("Sucesso ao registrar o aluno: \(airtableRecordId)")
+                    self.studentId = airtableRecordId
+                case .failure(let error):
+                    self.errorMessage = "Erro ao cadastrar o aluno: \(error.localizedDescription)"
+                }
+            }
+            
+        }
+    }
 }
 
 #Preview {
     LoginView()
 }
+

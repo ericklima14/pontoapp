@@ -26,6 +26,13 @@ extension Date {
         return Calendar.current.component(.month, from: self)
     }
     
+    static func classDurationInYears() -> String {
+        let currentYear = Calendar.current.component(.year, from: Date())
+        let evenYear = currentYear % 2
+        
+        return evenYear == 0 ? "\(currentYear) - \(currentYear + 1)" : "\(currentYear - 1) - \(currentYear)"
+    }
+    
     func formatMonthAndYear() -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "pt_BR")

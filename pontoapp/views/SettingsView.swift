@@ -44,11 +44,6 @@ struct SettingsView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.white.opacity(0.9))
                 }
-                
-            TextField("Digite seu Student ID", text: $studentId)
-               .textFieldStyle(.roundedBorder)
-               .focused($isTextFieldFocused)
-               .padding()
             
             if !studentId.isEmpty {
                 Text("ID salvo: \(studentId)")

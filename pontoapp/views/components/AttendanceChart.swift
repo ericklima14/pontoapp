@@ -71,20 +71,26 @@ struct AttendanceChart: View {
 
 
 struct LegendItem: View {
-    let color: Color
-    let label: String
+    var color: Color
+    var label: String
     
     var body: some View {
-        HStack(spacing: 4) {
-            Circle()
+        HStack(spacing: 6) {
+            // Mantemos o quadradinho arredondado para conversar com o grid do calendário!
+            RoundedRectangle(cornerRadius: 3)
                 .fill(color)
                 .frame(width: 8, height: 8)
+            
             Text(label)
-                .foregroundColor(.white.opacity(0.7))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.white.opacity(0.85))
         }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.white.opacity(0.05)) // Fundo translúcido estilo "Tag"
+        .clipShape(Capsule())
     }
 }
-
 
 #Preview {
     AttendanceChart()

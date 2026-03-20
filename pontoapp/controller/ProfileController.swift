@@ -9,13 +9,17 @@ import SwiftUI
 import PhotosUI
 
 class ProfileController: NSObject, ObservableObject {
-    
-  
     @Published var selectedImage: PhotosPickerItem? {
         didSet { Task { try await loadImage() } }
     }
     
     @Published var profileImage: Image?
+    
+    override init(){
+        if let cachedImage = ProfileSetupViewModel.loadImageFromDisk() {
+            profileImage = Image(uiImage: cachedImage)
+        }
+    }
     
     func loadImage() async throws{
         guard let item = selectedImage else { return }
@@ -25,8 +29,5 @@ class ProfileController: NSObject, ObservableObject {
             self.profileImage = Image(uiImage: image)
         }
     }
-    
-    
-    
 }
 

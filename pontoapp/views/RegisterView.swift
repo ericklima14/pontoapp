@@ -34,7 +34,7 @@ struct RegisterView: View {
                 .background(Color.bg950)
             }
             .navigationDestination(isPresented: $justifyLate){
-                JustifyView(titleText: "Justificar Atraso", subtitleText: "MOTIVO DE SEU ATRASO"){ text, files in
+                JustifyView(titleText: "Justificar Atraso", subtitleText: "Motivo de seu atraso:"){ text, files in
                     
                     viewModel.registerEvent(
                         studentId: studentId,
@@ -46,7 +46,7 @@ struct RegisterView: View {
                     justifyLate = false                }
             }
             .navigationDestination(isPresented: $justifyAbstence){
-                JustifyView(titleText: "Justificar Ausência", subtitleText: "MOTIVO DA SUA AUSÊNCIA"){ text, files in
+                JustifyView(titleText: "Justificar Ausência", subtitleText: "Motivo de sua ausência:"){ text, files in
                     viewModel.registerEvent(
                         studentId: studentId,
                         status: .absent,
@@ -99,9 +99,9 @@ struct RegisterView: View {
             
             Spacer()
             
-            
             Group{
                 if isChekcInWindowOpen() && !hasAlreadyCheckedInToday(){
+                //if !hasAlreadyCheckedInToday(){
                     PresenceSlider(profileImage: profileImage, onSwipeRight: {
                         LocalAuthService().authorizeUser { authenticated in
                             if authenticated {
@@ -118,7 +118,11 @@ struct RegisterView: View {
                         }
                         
                     }, onSwipeLeft: {
-                        justifyAbstence = true
+                        LocalAuthService().authorizeUser{ authenticated in
+                            if authenticated {
+                                justifyAbstence = true
+                            }
+                        }
                     })
                 } else if hasAlreadyCheckedInToday() {
                     CardCheckedInView()
@@ -166,13 +170,13 @@ struct RegisterView: View {
     }
         
     func isOnTime() -> Bool {
-        //limite é 14:10
-        let endMinutes: Int = 14 * 60 + 10
+        //limite é 14:20
+        let endMinutes: Int = 14 * 60 + 20
         return Date.getCurrentMinutes() <= endMinutes
     }
     
     func isChekcInWindowOpen() -> Bool {
-        let beginMinutes: Int = 13 * 60 + 30
+        let beginMinutes: Int = 13 * 60 + 40
         let endMinutes: Int = 18 * 60
         
         let nowMinutes = Date.getCurrentMinutes()

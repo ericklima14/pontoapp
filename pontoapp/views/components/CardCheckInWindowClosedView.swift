@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct CardCheckInWindowClosedView: View {
+    let text: String
+    
     var body: some View {
-        VStack(alignment: .center, spacing: 15) {
+        VStack(alignment: .center, spacing: 8) {
             Image(systemName: "clock.arrow.circlepath")
                 .resizable()
                 .scaledToFit()
@@ -22,14 +24,14 @@ struct CardCheckInWindowClosedView: View {
                     .font(.headline)
                     .fixedSize(horizontal: false, vertical: true)
                 
-                Text(getMessageForClosedWindow())
+                Text(text)
                     .font(.subheadline)
                     .opacity(0.8)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .multilineTextAlignment(.center)
         }
-        .padding(.vertical, 15)
+        .padding(.vertical, 18)
         .padding(.horizontal, 20)
         .frame(maxWidth: .infinity)
         .background(
@@ -39,20 +41,8 @@ struct CardCheckInWindowClosedView: View {
         .padding(.horizontal, 20)
         .foregroundColor(.white)
     }
-    
-    func getMessageForClosedWindow() -> String {
-        let now = Date.getCurrentMinutes()
-        let startMinutes: Int = 13 * 60 + 30
-        
-        if now < startMinutes {
-            return "Volte às 13:30 para bater o seu ponto!"
-        }
-        
-        return "Volte amanhã às 13:30 para bater o seu ponto novamente!"
-    }
-
 }
 
 #Preview {
-    CardCheckInWindowClosedView()
+    CardCheckInWindowClosedView(text: "Volte às 13:40 para bater seu ponto!")
 }

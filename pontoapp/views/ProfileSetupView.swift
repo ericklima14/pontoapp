@@ -23,16 +23,6 @@ struct ProfileSetupView: View {
             Color.bg950.ignoresSafeArea()
             
             VStack{
-                Text("Apple Academy")
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white).opacity(0.9)
-                    .font(.system(size: 40))
-                
-                Text("SENAC")
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white).opacity(0.7)
-                    .font(.system(size: 30))
-                
                 Spacer()
                 
                 Group {
@@ -61,7 +51,7 @@ struct ProfileSetupView: View {
                 }
                 
                 
-                Text("Permita o acesso a sua lista de contatos para selecionar o seu Memoji do seu card de contatos para uma experiência única e personalizada dentro do app!")
+                Text("Permita o acesso a sua lista de contatos para selecionar o seu Memoji!")
                     .fontWeight(.semibold)
                     .foregroundColor(.white).opacity(0.7)
                     .padding(.horizontal, 25)
@@ -69,57 +59,40 @@ struct ProfileSetupView: View {
                 
                 Spacer()
                 
-                Button(action: {
-                    if profileImage == nil {
-                        ContactPicker.fetchMeCard(emailAddress: userEmailApple){ contato in
-                            DispatchQueue.main.async {
-                                if let imagePath = contato?.imageData,  let imageTransformed = UIImage(data: imagePath) {
-                                    viewModel.saveProfileImage(profileImage: imageTransformed)
-                                    profileImage = imageTransformed
-                                }
-                            }
-                        }
-                    } else {
-                        isUploading = true
-                        
-                        viewModel.sendMemojiToDropbox { sucesso in
-                            DispatchQueue.main.async {
-                                isUploading = false
-                                if sucesso {
-                                    withAnimation(.easeInOut){
-                                        hasSelectedMemoji = true
-                                    }
-                                } else {
-                                    print("Erro no upload. Tente novamente.")
-                                }
-                            }
-                        }
-                    }
-                }) {
+                Group{
                     if isUploading {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .gradientEnd))
-                    } else{
-                        Text(profileImage == nil ? "Permitir" : "Continuar")
-                            .font(.system(size: 20))
-                            .fontWeight(.semibold)
-                            .foregroundColor(.black)
-                            .padding()
-                            .frame(width: UIScreen.main.bounds.width - 80)
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        Color.gradientStart,
-                                        Color.gradientEnd
-                                    ]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(10)
+                    } else {
+                        YellowButtonView(disabled: $isUploading, text: profileImage == nil ? "Permitir" : "Continuar", iconImage: nil){
+                            if profileImage == nil {
+                                ContactPicker.fetchMeCard(emailAddress: userEmailApple){ contato in
+                                    DispatchQueue.main.async {
+                                        if let imagePath = contato?.imageData,  let imageTransformed = UIImage(data: imagePath) {
+                                            viewModel.saveProfileImage(profileImage: imageTransformed)
+                                            profileImage = imageTransformed
+                                        }
+                                    }
+                                }
+                            } else {
+                                isUploading = true
+                                
+                                viewModel.sendMemojiToDropbox { sucesso in
+                                    DispatchQueue.main.async {
+                                        isUploading = false
+                                        if sucesso {
+                                            withAnimation(.easeInOut){
+                                                hasSelectedMemoji = true
+                                            }
+                                        } else {
+                                            print("Erro no upload. Tente novamente.")
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
-                .disabled(isUploading)
                 .padding(.bottom, 40)
             }
         }

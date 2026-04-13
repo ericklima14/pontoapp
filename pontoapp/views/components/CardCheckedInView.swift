@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct CardCheckedInView: View {
+    let text: String
+    
     var body: some View {
         VStack(alignment: .center, spacing: 15) {
             Image(systemName: "checkmark.circle")
@@ -22,7 +24,7 @@ struct CardCheckedInView: View {
                     .font(.headline)
                     .fixedSize(horizontal: false, vertical: true)
                 
-                Text(getMessageForClosedWindow())
+                Text(text)
                     .font(.subheadline)
                     .opacity(0.8)
                     .fixedSize(horizontal: false, vertical: true)
@@ -39,19 +41,8 @@ struct CardCheckedInView: View {
         .padding(.horizontal, 20)
         .foregroundColor(.white)
     }
-    
-    func getMessageForClosedWindow() -> String {
-        let now = Date.getCurrentMinutes()
-        let startMinutes: Int = 13 * 60 + 30
-        
-        if now < startMinutes {
-            return "Volte às 13:30 para bater o seu ponto!"
-        }
-        
-        return "Volte amanhã às 13:30 para bater o seu ponto novamente!"
-    }
 }
 
 #Preview {
-    CardCheckedInView()
+    CardCheckedInView(text: "Volte às 13:40 para bater seu ponto novamente.")
 }

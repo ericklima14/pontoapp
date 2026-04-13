@@ -15,6 +15,7 @@ struct JustifyView: View {
     @State var text: String = ""
     
     let gradientColors: LinearGradient = LinearGradient(gradient: Gradient(colors: [.gradientStart, .gradientEnd]), startPoint: .leading, endPoint: .trailing)
+    
     @State var selectedFiles: [URL] = []
     
     var sendJustify: (String, [URL]) -> Void
@@ -85,19 +86,9 @@ struct JustifyView: View {
             
             Spacer()
             
-            Button {
+            
+            YellowButtonView(disabled: .constant(false), text: "Enviar para Análise", iconImage: "person.fill.checkmark"){
                 sendJustify(text, selectedFiles)
-            } label: {
-                HStack(){
-                    Image(systemName: "person.fill.checkmark")
-                    Text("Enviar para Análise")
-                }
-                .foregroundStyle(.bg900)
-                .frame(maxWidth: .infinity, minHeight: 50)
-                .background(gradientColors)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .padding(.horizontal, 20)
-                
             }
             .padding(.bottom, 15)
             

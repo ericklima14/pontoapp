@@ -18,9 +18,13 @@ class WebService: ObservableObject {
         return formatter
     }()
     
-    let apiKey = Bundle.main.object(forInfoDictionaryKey: "AirtableToken") as? String ?? ""
+    public let apiKey = EnviromentVariables.airtableApiToken
+    public let urlStudentsTable = EnviromentVariables.urlStudentsTable
+    public let urlTimelogTable = EnviromentVariables.urlTimelogTable
+    public let urlEventsTable = EnviromentVariables.urlEventsTable
+    public let urlSummaryTable = EnviromentVariables.urlSummaryTable
     
-    func authenticateStudent(appleID: String, name: String, email: String, completion: @escaping(Result<String, Error>) -> Void){
+    func authenticateStudent(appleID: String, name: String, email: String, completion: @escaping(Result<String, Error>) -> Void) {
         print("Iniciando a busca:")
         print("ESTUDANTE - \(name)")
         print("APPLEID - \(appleID)")
@@ -56,8 +60,7 @@ class WebService: ObservableObject {
     }
     
     func fetchStudentExistence(appleUserID: String, completion: @escaping (Result<String?, Error>) -> Void) {
-        let baseURL = "https://api.airtable.com/v0/app4Cut7Wu9GESQDL/tblAa5f96kWbKt3Rn"
-        guard var components = URLComponents(string: baseURL) else {
+        guard var components = URLComponents(string: self.urlStudentsTable) else {
             completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "URL base inválida"])))
             return
         }
@@ -128,7 +131,7 @@ class WebService: ObservableObject {
     
     func updateStudentMemoji(recordId: String, memojiPublicUrl: String, completion: @escaping (Result<Bool, Error>) -> Void) {
         
-        guard let url = URL(string: "https://api.airtable.com/v0/app4Cut7Wu9GESQDL/tblAa5f96kWbKt3Rn/\(recordId)") else {
+        guard let url = URL(string: "\(self.urlStudentsTable)/\(recordId)") else {
             completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "URL inválida"])))
             return
         }
@@ -158,6 +161,9 @@ class WebService: ObservableObject {
             }
             
             guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                if let data = data, let errorBody = String(data: data, encoding: .utf8) {
+                    print("Erro Airtable (\((response as? HTTPURLResponse)?.statusCode ?? -1)): \(errorBody)")
+                }
                 completion(.failure(NSError(domain: "APIError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Erro ao atualizar"])))
                 return
             }
@@ -167,7 +173,7 @@ class WebService: ObservableObject {
     }
     
     func postNewStudent(studentRecord: StudentRecord, completion: @escaping (Result<String, Error>) -> Void) {
-        guard let url = URL(string: "https://api.airtable.com/v0/app4Cut7Wu9GESQDL/tblAa5f96kWbKt3Rn") else {
+        guard let url = URL(string: self.urlStudentsTable) else {
             completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "URL inválida"])))
             return
         }
@@ -178,7 +184,7 @@ class WebService: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue( "Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         
-        var fields: [String: Any] = [
+        let fields: [String: Any] = [
             "AppleID": studentRecord.appleID,
             "Name": studentRecord.name,
             "Email": studentRecord.email
@@ -238,7 +244,7 @@ class WebService: ObservableObject {
     }
     
     func postRecord(record: RecordModel, completion: @escaping (Result<Bool, Error>) -> Void) {
-        guard let url = URL(string: "https://api.airtable.com/v0/app4Cut7Wu9GESQDL/tblkNzlaXHa3x5SVr") else {
+        guard let url = URL(string: self.urlTimelogTable) else {
             completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "URL inválida"])))
             return
         }
@@ -312,8 +318,7 @@ class WebService: ObservableObject {
     }
     
     func fetchCalendar(studentId: String, month: Int, year: Int, completion: @escaping (Result<[Int: RecordStatus], Error>) -> Void) {
-        let baseURL = "https://api.airtable.com/v0/app4Cut7Wu9GESQDL/Timelog"
-        var components = URLComponents(string: baseURL)
+        var components = URLComponents(string: self.urlTimelogTable)
         
         components?.queryItems = [
             URLQueryItem(name: "filterByFormula", value: "AND(SEARCH('\(studentId)', {Record ID (from student)} & ''), MONTH({datetime}) = \(month), YEAR({datetime}) = \(year))")
@@ -362,13 +367,11 @@ class WebService: ObservableObject {
         task.resume()
     }
     
-    func fetchEvents(completion: @escaping (Result<[Event], Error>) -> Void) {
+    func fetchEvents(completion: @escaping (Result<[EventDetail], Error>) -> Void) {
         isLoading = true
         errorMessage = nil
         
-        let baseURL = "https://api.airtable.com/v0/app4Cut7Wu9GESQDL/Eventos"
-        
-        var components = URLComponents(string: baseURL)
+        var components = URLComponents(string: self.urlEventsTable)
         
         let filterFormula = "{Datetime} >= TODAY()"
         
@@ -410,9 +413,28 @@ class WebService: ObservableObject {
                 }
                 
                 do {
-                    let result = try JSONDecoder().decode(AirtableResponse.self, from: data)
-                    self?.events = result.records
-                    completion(.success(result.records))
+                    let response = try JSONDecoder().decode(AirtableEventDetailResponse.self, from: data)
+
+                    let timeFmt = DateFormatter()
+                    timeFmt.dateFormat = "HH:mm"
+                    let isoFmt = ISO8601DateFormatter()
+                    isoFmt.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+                    let events: [EventDetail] = response.records.compactMap { record in
+                        guard let eventDate = isoFmt.date(from: record.fields.datetime) else { return nil }
+                        return EventDetail(
+                            id:       record.id,
+                            name:     record.fields.name,
+                            time:     eventDate,
+                            icon:     record.fields.icon ?? "calendar",
+                            colorHex: record.fields.colorHex,
+                            description:     record.fields.description,
+                            supportMaterial: record.fields.supportMaterial,
+                            deliveryLinks:   record.fields.deliveryLinks
+                        )
+                    }
+
+                    completion(.success(events))
                 } catch {
                     self?.errorMessage = "Erro ao processar dados"
                     completion(.failure(error))
@@ -421,5 +443,117 @@ class WebService: ObservableObject {
             }
         }.resume()
     }
+    
+    func fetchSummary(studentId: String, completion: @escaping (Result<SummaryDetailFields, Error>) -> Void) {
+        guard var components = URLComponents(string: self.urlSummaryTable) else {
+            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "URL base inválida"])))
+            return
+        }
+        
+        let formula = "{Record ID (from student)} = '\(studentId)'"
+        components.queryItems = [
+            URLQueryItem(name: "filterByFormula", value: formula)
+        ]
+        
+        print("🔍 Formula: \(formula)")
+        print("🔍 URL: \(components.url?.absoluteString ?? "nil")")
+        
+        guard let url = components.url else {
+            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Falha ao montar parâmetros da URL"])))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue( "Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                DispatchQueue.main.async { completion(.failure(error)) }
+                return
+            }
 
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                let status = (response as? HTTPURLResponse)?.statusCode ?? -1
+                let error = NSError(domain: "", code: status, userInfo: [NSLocalizedDescriptionKey: "Erro no servidor: \(status)"])
+                DispatchQueue.main.async { completion(.failure(error)) }
+                return
+            }
+            
+            guard let data = data else {
+                let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Dados não encontrados"])
+                completion(.failure(error))
+                return
+            }
+
+            do {
+                let decodedResponse = try JSONDecoder().decode(AirtableSummaryDetailResponse.self, from: data)
+                
+                if let firstRecord = decodedResponse.records.first {
+                    let field = firstRecord.fields
+                    var summary = SummaryDetailFields(
+                        id: field.id,
+                        studentId: field.studentId,
+                        recordId: field.recordId,
+                        presences: field.presences,
+                        absences: field.absences,
+                        delays: field.delays
+                    )
+                    
+                    summary.summaryRecordId = firstRecord.id
+                    DispatchQueue.main.async { completion(.success(summary)) }
+                } else {
+                    let error = NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "Estudante não encontrado na base para fazer o resumo"])
+                    DispatchQueue.main.async { completion(.failure(error)) }
+                }
+            } catch {
+                DispatchQueue.main.async { completion(.failure(error)) }
+            }
+        }.resume()
+    }
+    
+    func updateSummaryStudent(summaryRecord: SummaryRecord, completion: @escaping(Result<Bool, Error>) -> Void) {
+        
+        guard let url = URL(string: "\(self.urlSummaryTable)/\(summaryRecord.summaryId)") else {
+            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "URL inválida"])))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+
+        let fields: [String: Int] = [
+            "presences": summaryRecord.presences,
+            "absences": summaryRecord.absences,
+            "delays": summaryRecord.delays,
+        ]
+        
+        let body: [String: Any] = [
+            "fields": fields,
+            "typecast": true
+        ]
+        
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                if let data = data, let errorBody = String(data: data, encoding: .utf8) {
+                    print("Erro Airtable (\((response as? HTTPURLResponse)?.statusCode ?? -1)): \(errorBody)")
+                }
+                completion(.failure(NSError(domain: "APIError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Erro ao atualizar"])))
+                return
+            }
+            
+            completion(.success(true))
+        }.resume()
+    }
 }

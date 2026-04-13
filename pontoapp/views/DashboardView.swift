@@ -8,48 +8,49 @@
 import SwiftUI
 
 struct DashboardView: View {
-    @StateObject var web = WebService()
+    @StateObject var viewModel = DashboardViewModel()
     
     var body: some View {
         NavigationView {
             ZStack {
                 Color.bg950.ignoresSafeArea()
                 
-                
-                VStack {
-                    if web.isLoading {
+                VStack(spacing: 15) {
+                    if viewModel.isLoading {
                         ProgressView()
+                            .tint(.white)
+                            .padding(.top, 60)
                     } else {
-                        AttendanceChart()
-                            .padding()
+                        AttendanceProgressChart(
+                            presences: viewModel.presences,
+                            absences: viewModel.absences,
+                            delays: viewModel.delays
+                        )
                         
-                        Text("Próximos Eventos")
-                            .font(.title2)
-                            .bold()
+                        AttendanceStatusCard(
+                            status: viewModel.attendanceStatus,
+                            absences: viewModel.absences
+                        )
                         
-                        ScrollView {
-                            VStack(spacing: 16) {
-                                ForEach(web.events) { event in
-                                    EventCard(event: event)
-                                }
-                            }
-                            .padding()
+                        if let event = viewModel.nextEvent {
+                            NextEventCard(event: event)
                         }
+                        
+                        Spacer()
                     }
                 }
+                .padding(.horizontal)
+                .padding(.top, 8)
             }
             .navigationTitle("Dashboard")
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .onAppear {
-                loadEvents()
+                viewModel.loadSummary()
             }
             .refreshable {
-                loadEvents()
+                viewModel.loadSummary()
             }
         }
-    }
-    
-    func loadEvents() {
-        web.fetchEvents { _ in }
     }
 }
 

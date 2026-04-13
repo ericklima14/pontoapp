@@ -10,21 +10,29 @@ import AuthenticationServices
 
 struct LoginView: View {
     @State private var errorMessage = ""
+    @State private var scaleEffect: CGFloat = 0.5
+    @State private var opacity: Double = 0.0
     
     var body: some View {
         VStack{
-            Text("Apple Academy")
-                .fontWeight(.semibold)
-                .foregroundColor(.white).opacity(0.9)
-                .font(.system(size: 40))
-            
-            Text("SENAC")
-                .fontWeight(.semibold)
-                .foregroundColor(.white).opacity(0.7)
-                .font(.system(size: 30))
-            
             Spacer()
             
+            Image(systemName: "person.crop.circle.fill.badge.checkmark")
+                .resizable()
+                .foregroundColor(.white.opacity(0.9))
+                .frame(width: 120, height: 105)
+                .opacity(opacity)
+                .scaleEffect(scaleEffect)
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.5, blendDuration: 0)) {
+                            scaleEffect = 1.0
+                            opacity = 0.9
+                        }
+                    }
+                }
+                .padding(.top, 60)
+                
             Text("Faça login para ter acesso aos recursos do app do Apple Developer Academy do Centro Universitário SENAC")
                 .fontWeight(.semibold)
                 .foregroundColor(.white).opacity(0.7)

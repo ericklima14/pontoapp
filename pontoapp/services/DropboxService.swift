@@ -7,24 +7,6 @@
 
 import Foundation
 
-struct EnviromentVariables {
-    static var dropboxApiKey: String {
-        return Bundle.main.object(forInfoDictionaryKey: "DropboxKey") as? String ?? ""
-    }
-    
-    static var dropboxAppSecret: String {
-        return Bundle.main.object(forInfoDictionaryKey: "DropboxAppSecret") as? String ?? ""
-    }
-    
-    static var dropboxAcessToken: String {
-        return Bundle.main.object(forInfoDictionaryKey: "DropboxAcessToken") as? String ?? ""
-    }
-    
-    static var dropboxRefreshToken: String {
-        return Bundle.main.object(forInfoDictionaryKey: "DropboxRefreshToken") as? String ?? ""
-    }
-}
-
 class DropboxService {
     private let apiKey = EnviromentVariables.dropboxApiKey
     private let appSecret = EnviromentVariables.dropboxAppSecret

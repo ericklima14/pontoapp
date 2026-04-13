@@ -12,8 +12,10 @@ struct CalendarView: View {
     @State private var selectedDate: Date = Date()
     
     @Binding var daysCheckedIn: [Int: RecordStatus]
+    @Binding var daysWithEvents: [Int]
     
     var seeRecords: ((_ month: Int, _ year: Int) -> Void)
+    var onDateSelected: ((_ date: Date) -> Void)? = nil
     
     var body: some View {
             VStack(spacing: 15) {
@@ -76,8 +78,13 @@ struct CalendarView: View {
                             let status = daysCheckedIn[value.day]
                             
                             ZStack {
-                                RoundedRectangle(cornerRadius: 6)
-                                    .fill(getBackgroundColor(status: status))
+                                if value.isDisabledDay {
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(getBackgroundColor(status: .holiday))
+                                } else {
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(getBackgroundColor(status: status))
+                                }
                                 
                                 if isSelected {
                                     RoundedRectangle(cornerRadius: 6)
@@ -87,12 +94,20 @@ struct CalendarView: View {
                                 Text("\(value.day)")
                                     .font(.system(size: 14, weight: .bold))
                                     .foregroundColor(getTextColor(status: status))
+                                
+                                if daysWithEvents.contains(value.day) && !value.isDisabledDay {
+                                    Circle()
+                                        .fill(Color.white)
+                                        .frame(width: 5, height: 5)
+                                        .offset(x: 12, y: -12)
+                                }
                             }
                             .aspectRatio(1, contentMode: .fit)
                             .onTapGesture {
                                 withAnimation {
                                     self.selectedDate = value.date
                                 }
+                                onDateSelected?(value.date)
                             }
                         } else {
                             RoundedRectangle(cornerRadius: 6)
@@ -142,12 +157,13 @@ struct CalendarView: View {
     
     func getBackgroundColor(status: RecordStatus?) -> Color {
         guard let status = status else {
-            return Color.white.opacity(0.1)
+            return Color.blue.opacity(0.2)
         }
         switch status {
         case .absent: return .red.opacity(0.8)
         case .lated: return .orange.opacity(0.9)
         case .present: return .green.opacity(0.8)
+        case .holiday: return .white.opacity(0.15)
         }
     }
     
@@ -165,21 +181,22 @@ struct CalendarView: View {
         
         CalendarView(
             daysCheckedIn: .constant([
-                2: .present,
-                3: .present,
-                4: .present,
-                5: .present,
-                6: .present,
-                
-                9: .present,
-                10: .lated,
-                11: .absent,
-                12: .present,
-                13: .present,
-                
-                16: .present,
-                17: .present
-            ])
+//                2: .present,
+//                3: .present,
+//                4: .present,
+//                5: .present,
+//                6: .present,
+//                
+//                9: .present,
+//                10: .lated,
+//                11: .absent,
+//                12: .present,
+//                13: .present,
+//                
+//                16: .present,
+//                17: .present
+                28: .present
+            ]), daysWithEvents: .constant([]),
         ) { month, year in
             print("Setinha clicada! Buscando dados de: \(month)/\(year)")
         }

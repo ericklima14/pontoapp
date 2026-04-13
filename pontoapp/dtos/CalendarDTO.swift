@@ -42,6 +42,8 @@ extension RecordStatus {
             return .red
         case .lated:
             return .yellow // ou .orange
+        case .holiday:
+            return .gray
         }
     }
 }

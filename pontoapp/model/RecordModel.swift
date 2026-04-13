@@ -11,6 +11,7 @@ enum RecordStatus: String, Codable {
     case lated = "Lated"
     case present = "Present"
     case absent = "Absent"
+    case holiday
 }
 
 struct RecordModel: Codable{

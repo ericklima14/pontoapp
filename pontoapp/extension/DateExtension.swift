@@ -11,6 +11,8 @@ struct DateValue: Identifiable{
     var id = UUID()
     var day: Int
     var date: Date
+    var isDisabledDay: Bool = false
+    var holiday: String = ""
 }
 
 extension Date {
@@ -49,7 +51,6 @@ extension Date {
         return hour * 60 + minute
     }
 
-    
     static func dateTimeNow() -> String {
         let formatterDate = ISO8601DateFormatter()
         
@@ -60,18 +61,16 @@ extension Date {
     
     func daysOfMonth() -> [DateValue] {
         let calendar = Calendar.current
-
-        guard let currentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: self)) else {
+        let year = calendar.component(.year, from: self)
+        
+        let yearHolidays = HolidayManager.shared.getHolidays(for: year)
+        
+        guard let currentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: self)),
+                let range = calendar.range(of: .day, in: .month, for: currentMonth) else {
             return []
         }
         
-        guard let range = calendar.range(of: .day, in: .month, for: currentMonth) else {
-            return []
-        }
-        
-        let firstDayOfMonth = currentMonth
-        let daysOfWeek = calendar.component(.weekday, from: firstDayOfMonth) - 1
-        
+        let daysOfWeek = calendar.component(.weekday, from: currentMonth) - 1
         var days: [DateValue] = []
         
         for _ in 0..<daysOfWeek {
@@ -79,8 +78,22 @@ extension Date {
         }
         
         for day in range {
-            if let date = calendar.date(byAdding: .day, value: day - 1, to: currentMonth){
-                days.append(DateValue(day: day, date: date))
+            if let date = calendar.date(byAdding: .day, value: day - 1, to: currentMonth) {
+                // Criamos a chave "DD-MM" para bater com o dicionário
+                let dayInt = calendar.component(.day, from: date)
+                let monthInt = calendar.component(.month, from: date)
+                let key = String(format: "%02d-%02d", dayInt, monthInt)
+                
+                let holidayName = yearHolidays[key] ?? ""
+                let isHoliday = !holidayName.isEmpty
+                let isWeekend = calendar.isDateInWeekend(date)
+                
+                days.append(DateValue(
+                    day: day,
+                    date: date,
+                    isDisabledDay: isHoliday || isWeekend,
+                    holiday: holidayName
+                ))
             }
         }
         

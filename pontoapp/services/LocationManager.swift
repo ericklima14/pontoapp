@@ -12,8 +12,18 @@ class LocationManager: NSObject, ObservableObject{
     private let manager = CLLocationManager()
     @Published var userLocation: CLLocation?
     @Published var permissionDenied = false
+    @Published var isInsideAcademy = false
     
     static let shared = LocationManager()
+    
+    //coordenadas da academy
+    private let academyCoordinate = CLLocationCoordinate2D(
+      latitude:  -23.668777973166964,
+      longitude: -46.6992374689516
+    )
+
+    private let academyRadius: CLLocationDistance = 50.0
+    private let geofenceRadius: CLLocationDistance = 80.0
     
     override init() {
         super.init()
@@ -29,17 +39,32 @@ class LocationManager: NSObject, ObservableObject{
         manager.requestAlwaysAuthorization()
     }
     
-    
     func monitorarGeofence(){
-        //coordenadas da academy
-        let center = CLLocationCoordinate2D(latitude: -23.668777973166964, longitude: -46.6992374689516)
-        let maxRadius = 20.0
-        
-        let region = CLCircularRegion(center: center, radius: maxRadius, identifier: "Academy")
+        let region = CLCircularRegion(center: academyCoordinate, radius: geofenceRadius, identifier: "Academy")
         region.notifyOnEntry = true
-        region.notifyOnExit = false
+        region.notifyOnExit = true
         
         manager.startMonitoring(for: region)
+    }
+    
+    func checkIfInsideAcademy() {
+        guard let userLocation = userLocation else { return }
+ 
+        let academyLocation = CLLocation(
+            latitude:  academyCoordinate.latitude,
+            longitude: academyCoordinate.longitude
+        )
+        
+        let distance = userLocation.distance(from: academyLocation)
+        let clampedAccuracy = min(userLocation.horizontalAccuracy, 50.0)
+        
+        let effectiveRadius = academyRadius + clampedAccuracy
+        
+        print("Distancia efetiva: \(effectiveRadius) - Distancia: \(distance)")
+        
+        DispatchQueue.main.async {
+            self.isInsideAcademy = distance <= effectiveRadius
+        }
     }
     
     private func requestSendUserNotification() {
@@ -102,14 +127,20 @@ extension LocationManager: CLLocationManagerDelegate{
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
+        guard location.horizontalAccuracy <= 100 else { return }
         self.userLocation = location
+        checkIfInsideAcademy()
     }
     
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         
         if region.identifier == "Academy"{
+            //TODO: TIRAR ESSES COMENTARIOS AO SUBIR PARA O TEST FLIGTH
             //if isOnTime(){
                 print("ENTROU na região no horário: \(region.identifier)")
+                DispatchQueue.main.async {
+                    self.isInsideAcademy = true
+                }
                 sendUserNotification()
             //} else {
 //                print("Entrou na região, mas fora do horário (13:30 - 14:30).")
@@ -119,7 +150,10 @@ extension LocationManager: CLLocationManagerDelegate{
     }
     
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
-        print("SAIU da região: \(region.identifier)")
+        if region.identifier == "Academy" {
+            print("SAIU da região: \(region.identifier)")
+            DispatchQueue.main.async { self.isInsideAcademy = false }
+        }
     }
     
     func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {

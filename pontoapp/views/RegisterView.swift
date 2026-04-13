@@ -1,59 +1,52 @@
 import SwiftUI
 
 struct RegisterView: View {
-    
+
     @AppStorage("studentId") private var studentId: String = "k"
-    
+
     @State private var justifyAbstence: Bool = false
     @State private var justifyLate: Bool = false
     @State private var showSettings = false
-    
-    @StateObject private var viewModel = RegistrationViewModel()
+
+    @EnvironmentObject private var viewModel: RegistrationViewModel
     @ObservedObject var locationManager = LocationManager.shared
     @StateObject var profileController = ProfileController()
-    
+
     private var profileImage: Image? {
-        if let profileImage = profileController.profileImage {
-            return profileImage
-        } else {
-            return Image(systemName: "person.circle.fill")
-        }
+        profileController.profileImage ?? Image(systemName: "person.circle.fill")
     }
-    
-    private let maxDragOffset: CGFloat = 150
-    
+
     var body: some View {
         if studentId.isEmpty {
             noStudentIdView
         } else {
             ZStack {
-                VStack(spacing: 20){
+                VStack(spacing: 20) {
                     registerCommand
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.bg950)
             }
-            .navigationDestination(isPresented: $justifyLate){
-                JustifyView(titleText: "Justificar Atraso", subtitleText: "Motivo de seu atraso:"){ text, files in
+            .navigationTitle("Agenda")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .navigationDestination(isPresented: $justifyLate) {
+                JustifyView(titleText: "Justificar Atraso", subtitleText: "Motivo de seu atraso:") { text, files in
+                    viewModel.requestCheckIn(studentId: studentId, status: .lated, location: locationManager.userLocation, justifyText: text, files: files)
                     
-                    viewModel.registerEvent(
-                        studentId: studentId,
-                        status: .lated,
-                        location: locationManager.userLocation,
-                        justifyText: text,
-                        files: files
-                    )
-                    justifyLate = false                }
+                    let today = Date.now
+                    viewModel.getCalendarInfos(month: today.month, year: today.year)
+                    
+                    justifyLate = false
+                }
             }
-            .navigationDestination(isPresented: $justifyAbstence){
-                JustifyView(titleText: "Justificar Ausência", subtitleText: "Motivo de sua ausência:"){ text, files in
-                    viewModel.registerEvent(
-                        studentId: studentId,
-                        status: .absent,
-                        location: locationManager.userLocation,
-                        justifyText: text,
-                        files: files
-                    )
+            .navigationDestination(isPresented: $justifyAbstence) {
+                JustifyView(titleText: "Justificar Ausência", subtitleText: "Motivo de sua ausência:") { text, files in
+                    viewModel.requestCheckIn(studentId: studentId, status: .absent, location: locationManager.userLocation, justifyText: text, files: files)
+                    
+                    let today = Date.now
+                    viewModel.getCalendarInfos(month: today.month, year: today.year)
+                    
                     justifyAbstence = false
                 }
             }
@@ -65,81 +58,77 @@ struct RegisterView: View {
             } message: {
                 Text(viewModel.errorMessage ?? "Ocorreu um erro inesperado")
             }
-            .onAppear{
+            .alert("Fora da Academy", isPresented: $viewModel.showOutsideAcademyAlert) {
+                Button("Registrar mesmo assim", role: .destructive) {
+                    viewModel.confirmCheckInOutsideAcademy()
+                }
+                Button("Cancelar", role: .cancel) {
+                    viewModel.cancelCheckIn()
+                }
+            } message: {
+                Text("Você parece estar fora da Apple Developer Academy. Deseja registrar o ponto mesmo assim?")
+            }
+            .onAppear {
                 viewModel.loadInitialData()
             }
         }
     }
-    
+
     var registerCommand: some View {
-        VStack{
-            HStack(alignment: .center, spacing: 10){
-                Text("Apple Academy")
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white).opacity(0.9)
-                    .font(.system(size: 30))
-                
-                Image(systemName: "applelogo")
-                    .resizable()
-                    .frame(width: 35, height: 40)
-                    .foregroundStyle(Color.white)
-                    .offset(y: -4)
-            }
-            
-            Text("SENAC")
-                .fontWeight(.semibold)
-                .foregroundColor(.white).opacity(0.7)
-                .font(.system(size: 25))
-            
+        VStack {
             Spacer()
-            
-            CalendarView(daysCheckedIn: $viewModel.calendarStatus){ month, year in
+
+            CalendarView(daysCheckedIn: $viewModel.calendarStatus, daysWithEvents: $viewModel.daysWithEvents) { month, year in
                 viewModel.getCalendarInfos(month: month, year: year)
+            } onDateSelected: { date in
+                viewModel.fetchDayDetail(date: date)
             }
-            
+            .sheet(item: $viewModel.selectedDayDetail){ detail in
+                DayDetailSheet(detail: detail)
+            }
+
             Spacer()
-            
-            Group{
-                if isChekcInWindowOpen() && !hasAlreadyCheckedInToday(){
-                //if !hasAlreadyCheckedInToday(){
+
+            Group {
+                if viewModel.isChekInWindowOpen() && !viewModel.hasAlreadyCheckedInToday() {
                     PresenceSlider(profileImage: profileImage, onSwipeRight: {
                         LocalAuthService().authorizeUser { authenticated in
                             if authenticated {
-                                if isOnTime() {
-                                    viewModel.registerEvent(
+                                if viewModel.isOnTime() {
+                                    viewModel.requestCheckIn(
                                         studentId: studentId,
                                         status: .present,
                                         location: locationManager.userLocation
                                     )
+                                    let today = Date.now
+                                    viewModel.getCalendarInfos(month: today.month, year: today.year)
+                                    
                                 } else {
                                     justifyLate = true
                                 }
                             }
                         }
-                        
+
                     }, onSwipeLeft: {
-                        LocalAuthService().authorizeUser{ authenticated in
+                        LocalAuthService().authorizeUser { authenticated in
                             if authenticated {
                                 justifyAbstence = true
                             }
                         }
                     })
-                } else if hasAlreadyCheckedInToday() {
-                    CardCheckedInView()
+                } else if viewModel.hasAlreadyCheckedInToday() {
+                    CardCheckedInView(text: viewModel.nextValidDayMessage())
                 } else {
-                    CardCheckInWindowClosedView()
+                    CardCheckInWindowClosedView(text: viewModel.nextValidDayMessage())
                 }
             }
             .layoutPriority(1)
-            
 
             Spacer()
-            
         }
-        
+        //.ignoresSafeArea(edges: .top)
     }
-    
-    
+
     var noStudentIdView: some View {
         VStack(spacing: 30) {
             Image(systemName: "person.crop.circle.badge.exclamationmark")
@@ -147,18 +136,16 @@ struct RegisterView: View {
                 .scaledToFit()
                 .frame(width: 100, height: 100)
                 .foregroundColor(.orange)
-            
+
             Text("Student ID não configurado")
                 .font(.title)
                 .fontWeight(.bold)
                 .foregroundColor(.white)
-            
+
             Text("Por favor, configure seu Student ID nas configurações para registrar presença.")
                 .font(.body)
                 .foregroundColor(.white.opacity(0.7))
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-            
                 .padding(.horizontal, 40)
                 .padding(.top, 20)
         }
@@ -168,28 +155,9 @@ struct RegisterView: View {
             SettingsView()
         }
     }
-        
-    func isOnTime() -> Bool {
-        //limite é 14:20
-        let endMinutes: Int = 14 * 60 + 20
-        return Date.getCurrentMinutes() <= endMinutes
-    }
-    
-    func isChekcInWindowOpen() -> Bool {
-        let beginMinutes: Int = 13 * 60 + 40
-        let endMinutes: Int = 18 * 60
-        
-        let nowMinutes = Date.getCurrentMinutes()
-
-        return nowMinutes >= beginMinutes && nowMinutes < endMinutes
-    }
-    
-    func hasAlreadyCheckedInToday() -> Bool {
-        return viewModel.isCheckedInToday
-    }
-    
 }
 
 #Preview {
-    RegisterView( )
+    RegisterView()
+        .environmentObject(RegistrationViewModel())
 }

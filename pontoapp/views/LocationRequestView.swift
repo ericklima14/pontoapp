@@ -57,34 +57,11 @@ struct LocationRequestView: View {
                 Spacer()
                 
                 if(!$locationManager.permissionDenied.wrappedValue) {
-                    Button(action: {
+                    YellowButtonView(disabled: .constant(false), text: "Permitir", iconImage: nil){
                         LocationManager.shared.requestLocation()
-                    }) {
-                        Text("Permitir")
-                            .font(.system(size: 20))
-                            .fontWeight(.semibold)
-                            .foregroundColor(.black)
-                            .padding()
-                            .frame(width: UIScreen.main.bounds.width - 80)
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        Color.gradientStart,
-                                        Color.gradientEnd
-                                    ]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(10)
                     }
                 }
-                
-                
-                
             }
-            
-
         }
     }
 }

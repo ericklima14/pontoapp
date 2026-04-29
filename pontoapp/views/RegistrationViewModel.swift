@@ -7,6 +7,21 @@
 
 import Foundation
 import CoreLocation
+import SwiftUI
+
+enum CheckInWindowResult {
+    case onTime
+    case late
+    case outsideWindow
+    case invalidDay
+    case error
+}
+
+enum CheckInWindowState {
+    case loading
+    case open
+    case closed
+}
 
 class RegistrationViewModel: ObservableObject {
     @Published var isLoading: Bool = false
@@ -19,9 +34,16 @@ class RegistrationViewModel: ObservableObject {
     @Published var selectedDayDetail: DayDetail? = nil
     @Published var isLoadingDayDetail: Bool = false
     @Published var daysWithEvents: [Int] = []
-    
+    @Published var checkInWindowState: CheckInWindowState = .loading
+        
+    @Published var isLoadingCalendar: Bool = false
+    @Published var currentCalendarDate: Date = Date()
+    private var calendarTask: Task<Void, Never>?
+
     @Published var showOutsideAcademyAlert: Bool = false
     private var pendingCheckIn: (() -> Void)?
+    
+    @AppStorage("pendingSync") private var pendingSync: Bool = false
     
     private var studentId: String {
         UserDefaults.standard.string(forKey: "studentId") ?? ""
@@ -41,8 +63,49 @@ class RegistrationViewModel: ObservableObject {
 
         if calendarStatus.isEmpty {
             getCalendarInfos(month: today.month, year: today.year)
-            loadEvents()
+            loadEvents(month: today.month, year: today.year)
         }
+    }
+    
+    func loadCheckInWindowState() async {
+        await MainActor.run { checkInWindowState = .loading }
+        
+        guard let serverTime = try? await TimeService.shared.fetchServerTime() else {
+            await MainActor.run { checkInWindowState = isChekInWindowOpen() ? .open : .closed }
+            return
+        }
+        
+        let totalMinutes = serverTime.hour * 60 + serverTime.minute
+        let calendar = Calendar.current
+        guard let serverDate = calendar.date(from: DateComponents(
+            year: serverTime.year, month: serverTime.month, day: serverTime.day
+        )) else { return }
+        
+        let isOpen = isValidDay(serverDate) &&
+                     totalMinutes >= 13 * 60 + 40 &&
+                     totalMinutes <= 18 * 60
+        
+        await MainActor.run {
+            checkInWindowState = isOpen ? .open : .closed
+        }
+    }
+    
+    func validateWithServerTime() async -> CheckInWindowResult {
+        guard let serverTime = try? await TimeService.shared.fetchServerTime() else {
+            return .error
+        }
+        
+        let totalMinutes = serverTime.hour * 60 + serverTime.minute
+        
+        let calendar = Calendar.current
+        guard let serverDate = calendar.date(from: DateComponents(
+            year: serverTime.year, month: serverTime.month, day: serverTime.day
+        )) else { return .error }
+        
+        guard isValidDay(serverDate) else { return .invalidDay }
+        guard totalMinutes >= 13 * 60 + 40 && totalMinutes <= 18 * 60 else { return .outsideWindow }
+        
+        return totalMinutes <= 14 * 60 + 20 ? .onTime : .late
     }
     
     func isOnTime() -> Bool {
@@ -114,14 +177,14 @@ class RegistrationViewModel: ObservableObject {
         return isCheckedInToday
     }
     
-    func loadEvents() {
-        webService.fetchEvents { [weak self] result in
+    func loadEvents(month: Int, year: Int) {
+        webService.fetchEventsForMonth(month: month, year: year) { [weak self] result in
             DispatchQueue.main.async {
-                switch result{
+                switch result {
                 case .success(let events):
                     self?.updateDaysWithEvents(from: events)
                 case .failure(let error):
-                    print("Não foi possível atualizar os eventos no calendário. Erro: \(error.localizedDescription)")
+                    print("Erro ao buscar eventos: \(error.localizedDescription)")
                 }
             }
         }
@@ -171,19 +234,29 @@ class RegistrationViewModel: ObservableObject {
     }
     
     func requestCheckIn(studentId: String, status: RecordStatus, location: CLLocation?, justifyText: String? = nil, files: [URL]? = nil) {
-        let locationManager = LocationManager.shared
- 
+        let isInsideAcademy = BeaconManager.shared.isInsideAcademy
+        
+        var isAtAcademy: RecordLocation
+        
+        switch isInsideAcademy {
+            case true:
+                isAtAcademy = .isAtAcademy
+            case false:
+                isAtAcademy = .isntAtAcademy
+        }
+        
         let checkInAction: () -> Void = { [weak self] in
             self?.registerEvent(
                 studentId: studentId,
                 status: status,
                 location: location,
                 justifyText: justifyText,
-                files: files
+                files: files,
+                isAtAcademy: isAtAcademy
             )
         }
  
-        if locationManager.isInsideAcademy {
+        if isInsideAcademy {
             checkInAction()
         } else {
             pendingCheckIn = checkInAction
@@ -201,9 +274,8 @@ class RegistrationViewModel: ObservableObject {
     func cancelCheckIn() {
         pendingCheckIn = nil
     }
-
     
-    func registerEvent(studentId: String, status: RecordStatus, location: CLLocation?, justifyText: String? = nil, files: [URL]? = nil){
+    func registerEvent(studentId: String, status: RecordStatus, location: CLLocation?, justifyText: String? = nil, files: [URL]? = nil, isAtAcademy: RecordLocation){
         guard let location = location else{
             DispatchQueue.main.async {
                 self.errorMessage = "Localização não encontrada"
@@ -219,12 +291,12 @@ class RegistrationViewModel: ObservableObject {
         if let files = files, !files.isEmpty {
             uploadFilesToDropbox(files: files){ [weak self] dropboxFiles in
                 DispatchQueue.main.async {
-                    self?.sendToAirtable(studentId: studentId, status: status, location: location, justifyText: justifyText, fileLinks: dropboxFiles)
+                    self?.sendToAirtable(studentId: studentId, status: status, location: location, justifyText: justifyText, fileLinks: dropboxFiles, isAtAcademy: isAtAcademy)
                 }
             }
         } else {
             DispatchQueue.main.async {
-                self.sendToAirtable(studentId: studentId, status: status, location: location, justifyText: justifyText, fileLinks: nil)
+                self.sendToAirtable(studentId: studentId, status: status, location: location, justifyText: justifyText, fileLinks: nil, isAtAcademy: isAtAcademy)
             }
         }
     }
@@ -265,35 +337,52 @@ class RegistrationViewModel: ObservableObject {
         }
     }
         
-    func getCalendarInfos(month: Int, year: Int){
+    func resetToCurrentMonth() {
+        calendarStatus = [:]
+        getCalendarInfos(month: currentCalendarDate.month, year: currentCalendarDate.year)
+    }
+    
+    func getCalendarInfos(month: Int, year: Int) {
         print("-------- O STUDENT ID É: \(self.studentId) ---------")
         print("-------- O STUDENT NAME É: \(self.studentName) ---------")
+        
+        calendarTask?.cancel()
+        
+        calendarTask = Task { @MainActor [weak self] in  // <- adiciona [weak self]
+            guard let self = self else { return }
+            
+            self.isLoadingCalendar = true
+            self.daysWithEvents = []
+            
+            guard !Task.isCancelled else { return }
+            self.loadEvents(month: month, year: year)
+            
+            self.webService.fetchCalendar(studentId: self.studentId, month: month, year: year) { [weak self] result in
+                guard let self = self, !Task.isCancelled else { return }
                 
-        webService.fetchCalendar(studentId: self.studentId, month: month, year: year) { [weak self] result in
-            DispatchQueue.main.async {
-                self?.isLoading = false
-                
-                switch result {
-                case .success(let status):
-                    self?.calendarStatus = status
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.isLoadingCalendar = false
                     
-                    let now = Date()
-                    if month == now.month && year == now.year {
-                        let todayDay = now.day
+                    switch result {
+                    case .success(let status):
+                        self.calendarStatus = status
                         
-                        self?.isCheckedInToday = (status[todayDay] != nil)
+                        let now = Date()
+                        if month == now.month && year == now.year {
+                            self.isCheckedInToday = (status[now.day] != nil)
+                        }
+                        
+                    case .failure(let error):
+                        self.errorMessage = error.localizedDescription
+                        self.showError = true
                     }
-                    
-                case .failure(let error):
-                    self?.errorMessage = error.localizedDescription
-                    self?.showError = true
                 }
             }
-            
         }
     }
     
-    func sendToAirtable(studentId: String, status: RecordStatus, location: CLLocation, justifyText: String?, fileLinks: [String]?){
+    func sendToAirtable(studentId: String, status: RecordStatus, location: CLLocation, justifyText: String?, fileLinks: [String]?, isAtAcademy: RecordLocation){
         
         let record = RecordModel(
             studentId: studentId,
@@ -301,7 +390,9 @@ class RegistrationViewModel: ObservableObject {
             longitude: location.coordinate.longitude,
             status: status,
             filesURL: fileLinks,
-            justifyText: justifyText)
+            justifyText: justifyText,
+            isAtAcademy: isAtAcademy
+        )
         
         webService.postRecord(record: record) { [weak self] result in
             DispatchQueue.main.async {
@@ -309,11 +400,26 @@ class RegistrationViewModel: ObservableObject {
                 
                 switch result {
                 case .success:
+                    switch status {
+                        case .present:
+                            let current = UserDefaults.standard.integer(forKey: "presences")
+                            UserDefaults.standard.set(current + 1, forKey: "presences")
+                        case .absent:
+                            let current = UserDefaults.standard.integer(forKey: "absences")
+                            UserDefaults.standard.set(current + 1, forKey: "absences")
+                        case .lated:
+                            let current = UserDefaults.standard.integer(forKey: "delays")
+                            UserDefaults.standard.set(current + 1, forKey: "delays")
+                        default:
+                            break
+                    }
+                    
+                    self?.pendingSync = true
                     self?.successMessage = (status == .absent) ? "Falta justificada com sucesso!" : "Presença registrada com sucesso!"
                     self?.showSuccess = true
+                    self?.resetToCurrentMonth()
                     
                     self?.isCheckedInToday = true
-                    NotificationCenter.default.post(name: NSNotification.Name("CheckInRealizado"), object: status)
                 case .failure(let error):
                     self?.errorMessage = error.localizedDescription
                     self?.showError = true

@@ -11,7 +11,8 @@ struct NextEventCard: View {
     let event: EventDetail
     
     @State private var visible = false
-
+    @State private var showDetail = false
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Próximo evento")
@@ -56,6 +57,10 @@ struct NextEventCard: View {
             withAnimation(.easeOut(duration: 0.5).delay(0.15)) {
                 visible = true
             }
+        }
+        .onTapGesture { showDetail = true }
+        .sheet(isPresented: $showDetail) {
+            EventDetailSheet(event: event)
         }
 
     }

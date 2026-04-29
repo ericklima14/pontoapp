@@ -8,11 +8,13 @@
 import SwiftUI
 
 struct CalendarView: View {
-    @State var currentDate: Date = Date()
+    @Binding var currentDate: Date
     @State private var selectedDate: Date = Date()
     
     @Binding var daysCheckedIn: [Int: RecordStatus]
     @Binding var daysWithEvents: [Int]
+    
+    @State private var displayedDate: Date = Date()
     
     var seeRecords: ((_ month: Int, _ year: Int) -> Void)
     var onDateSelected: ((_ date: Date) -> Void)? = nil
@@ -23,8 +25,7 @@ struct CalendarView: View {
                 HStack(spacing: 15) {
                     Button {
                         withAnimation(.easeInOut) {
-                            changeMonth(by: -1)
-                            seeRecords(currentDate.month, currentDate.year)
+                            changeMonthAnimated(by: -1)
                         }
                     } label: {
                         Image(systemName: "chevron.left")
@@ -45,8 +46,7 @@ struct CalendarView: View {
                     
                     Button {
                         withAnimation(.easeInOut) {
-                            changeMonth(by: 1)
-                            seeRecords(currentDate.month, currentDate.year)
+                            changeMonthAnimated(by: 1)
                         }
                     } label: {
                         Image(systemName: "chevron.right")
@@ -59,65 +59,71 @@ struct CalendarView: View {
                 }
                 .padding(.bottom, 5)
                 
-                HStack(spacing: 0) {
-                    ForEach(["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"], id: \.self) { day in
-                        Text(day)
-                            .font(.system(size: 12, weight: .semibold))
-                            .frame(maxWidth: .infinity)
-                            .foregroundColor(.gray)
-                    }
-                }
-                .padding(.horizontal, 7)
-                
-                let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
-                
-                LazyVGrid(columns: columns, spacing: 8) {
-                    ForEach(currentDate.daysOfMonth()) { value in
-                        if value.day != -1 {
-                            let isSelected = Calendar.current.isDate(value.date, inSameDayAs: selectedDate)
-                            let status = daysCheckedIn[value.day]
-                            
-                            ZStack {
-                                if value.isDisabledDay {
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .fill(getBackgroundColor(status: .holiday))
-                                } else {
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .fill(getBackgroundColor(status: status))
-                                }
-                                
-                                if isSelected {
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .stroke(Color.white, lineWidth: 1.5)
-                                }
-                                
-                                Text("\(value.day)")
-                                    .font(.system(size: 14, weight: .bold))
-                                    .foregroundColor(getTextColor(status: status))
-                                
-                                if daysWithEvents.contains(value.day) && !value.isDisabledDay {
-                                    Circle()
-                                        .fill(Color.white)
-                                        .frame(width: 5, height: 5)
-                                        .offset(x: 12, y: -12)
-                                }
-                            }
-                            .aspectRatio(1, contentMode: .fit)
-                            .onTapGesture {
-                                withAnimation {
-                                    self.selectedDate = value.date
-                                }
-                                onDateSelected?(value.date)
-                            }
-                        } else {
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(Color.white.opacity(0.03))
-                                .aspectRatio(1, contentMode: .fit)
+                VStack(spacing: 8){
+                    HStack(spacing: 0) {
+                        ForEach(["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"], id: \.self) { day in
+                            Text(day)
+                                .font(.system(size: 12, weight: .semibold))
+                                .frame(maxWidth: .infinity)
+                                .foregroundColor(.gray)
                         }
                     }
-                }
-                .padding(.horizontal, 10)
+                    .padding(.horizontal, 7)
+                    
+                    let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
 
+                    LazyVGrid(columns: columns, spacing: 8) {
+                        ForEach(currentDate.daysOfMonth()) { value in
+                            if value.day != -1 {
+                                let isSelected = Calendar.current.isDate(value.date, inSameDayAs: selectedDate)
+                                let status = daysCheckedIn[value.day]
+                                
+                                ZStack {
+                                    if value.isDisabledDay {
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(getBackgroundColor(status: .holiday))
+                                    } else {
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .fill(getBackgroundColor(status: status))
+                                    }
+                                    
+                                    if isSelected {
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(Color.white, lineWidth: 1.5)
+                                    }
+                                    
+                                    Text("\(value.day)")
+                                        .font(.system(size: 14, weight: .bold))
+                                        .foregroundColor(getTextColor(status: status))
+                                    
+                                    if daysWithEvents.contains(value.day) && !value.isDisabledDay {
+                                        Circle()
+                                            .fill(Color.white)
+                                            .frame(width: 5, height: 5)
+                                            .offset(x: 12, y: -12)
+                                    }
+                                }
+                                .aspectRatio(1, contentMode: .fit)
+                                .onTapGesture {
+                                    withAnimation {
+                                        self.selectedDate = value.date
+                                    }
+                                    onDateSelected?(value.date)
+                                }
+                            } else {
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color.white.opacity(0.03))
+                                    .aspectRatio(1, contentMode: .fit)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 10)
+
+                }
+                .id(currentDate.month)
+                .transition(.scale(scale: 0.88).combined(with: .opacity))
+                .clipped()
+                
                 RoundedRectangle(cornerRadius: 10)
                     .frame(maxWidth: .infinity)
                     .frame(height: 3)
@@ -155,6 +161,16 @@ struct CalendarView: View {
         }
     }
     
+    func changeMonthAnimated(by offset: Int) {
+        guard let nextDate = Calendar.current.date(byAdding: .month, value: offset, to: currentDate) else { return }
+            
+        seeRecords(nextDate.month, nextDate.year)
+        
+        withAnimation(.spring(response: 0.7, dampingFraction: 0.5)) {
+            currentDate = nextDate
+        }
+    }
+    
     func getBackgroundColor(status: RecordStatus?) -> Color {
         guard let status = status else {
             return Color.blue.opacity(0.2)
@@ -180,21 +196,21 @@ struct CalendarView: View {
         Color.black.ignoresSafeArea()
         
         CalendarView(
-            daysCheckedIn: .constant([
-//                2: .present,
-//                3: .present,
-//                4: .present,
-//                5: .present,
-//                6: .present,
-//                
-//                9: .present,
-//                10: .lated,
-//                11: .absent,
-//                12: .present,
-//                13: .present,
-//                
-//                16: .present,
-//                17: .present
+            currentDate: .constant(Date.now), daysCheckedIn: .constant([
+                2: .present,
+                3: .present,
+                4: .present,
+                5: .present,
+                6: .present,
+                
+                9: .present,
+                10: .lated,
+                11: .absent,
+                12: .present,
+                13: .present,
+                
+                16: .present,
+                17: .present,
                 28: .present
             ]), daysWithEvents: .constant([]),
         ) { month, year in

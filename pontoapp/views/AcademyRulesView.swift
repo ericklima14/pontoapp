@@ -122,7 +122,7 @@ struct AcademyRulesView: View {
                 RulesItem(
                     letter: "c",
                     title: "Warnings",
-                    body: "Infrações graves podem resultar em desligamento do Programa. A aplicação das medidas será realizada conforme a gravidade da infração.",
+                    body: "**Obs.:** Esses são apenas alguns exemplos de como um **Warning** pode ocorrer. Cada caso é avaliado de forma específica.",
                     view: RulesCardView(ruleItem:
                             RuleCardItem(
                                 title: "Warnings",
@@ -143,7 +143,7 @@ struct AcademyRulesView: View {
                 RulesItem(
                     letter: "c",
                     title: "Notifications",
-                    body: "Infrações graves podem resultar em desligamento do Programa. A aplicação das medidas será realizada conforme a gravidade da infração.",
+                    body: "**Obs.:** Esses são apenas alguns exemplos de como uma **Notification** pode ocorrer. Cada caso é avaliado de forma específica.",
                     view: RulesCardView(
                         ruleItem:
                             RuleCardItem(
@@ -164,7 +164,7 @@ struct AcademyRulesView: View {
                 RulesItem(
                     letter: "d",
                     title: "Shutdown",
-                    body: "Infrações graves podem resultar em desligamento do Programa. A aplicação das medidas será realizada conforme a gravidade da infração.",
+                    body: "**Obs.:** Esses são apenas alguns exemplos de como um **Shutdown** pode ocorrer. Cada caso é avaliado de forma específica.",
                     view: RulesCardView(
                         ruleItem:
                             RuleCardItem(

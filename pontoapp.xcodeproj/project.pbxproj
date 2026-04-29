@@ -281,8 +281,10 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "${SRCROOT}/pontoapp/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Ponto App";
+				INFOPLIST_KEY_CFBundleDisplayName = Stemp;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Precisamos usar o seu bluetooth para registro do seu ponto";
+				INFOPLIST_KEY_NSContactsUsageDescription = "Precisamos acessar seus contatos para configurar seu perfil";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Precisamos confirmar sua identidade para executar algumas ações";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Precisamos usar a sua localização para registrar o ponto";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Precisamos usar a sua localização para registrar o ponto";
@@ -325,8 +327,10 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "${SRCROOT}/pontoapp/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Ponto App";
+				INFOPLIST_KEY_CFBundleDisplayName = Stemp;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Precisamos usar o seu bluetooth para registro do seu ponto";
+				INFOPLIST_KEY_NSContactsUsageDescription = "Precisamos acessar seus contatos para configurar seu perfil";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Precisamos confirmar sua identidade para executar algumas ações";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Precisamos usar a sua localização para registrar o ponto";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Precisamos usar a sua localização para registrar o ponto";

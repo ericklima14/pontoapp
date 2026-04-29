@@ -2,16 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>AirtableSummaryApi</key>
-	<string>${AIRTABLE_SUMMARY_API_URL}</string>
 	<key>AirtableEventsApi</key>
 	<string>${AIRTABLE_EVENTS_API_URL}</string>
 	<key>AirtablePontoApi</key>
 	<string>${AIRTABLE_PONTO_API_URL}</string>
 	<key>AirtableStudentsApi</key>
 	<string>${AIRTABLE_STUDENTS_API_URL}</string>
-	<key>NSContactsUsageDescription</key>
-	<string>Precisamos acessar os seus contatos para carregar o seu Memoji.</string>
+	<key>AirtableSummaryApi</key>
+	<string>${AIRTABLE_SUMMARY_API_URL}</string>
 	<key>AirtableToken</key>
 	<string>$(AIRTABLE_TOKEN)</string>
 	<key>DropboxAcessToken</key>
@@ -22,9 +20,12 @@
 	<string>$(DROPBOX_API_KEY)</string>
 	<key>DropboxRefreshToken</key>
 	<string>$(DROPBOX_REFRESH_TOKEN)</string>
+	<key>TimeZoneApi</key>
+	<string>${TIME_ZONE_API_URL}</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
+		<string>bluetooth-central</string>
 	</array>
 </dict>
 </plist>

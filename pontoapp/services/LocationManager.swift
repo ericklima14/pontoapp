@@ -98,11 +98,10 @@ class LocationManager: NSObject, ObservableObject{
         let nowMinutes = hour * 60 + minute
         
         //13:30 até 14:30
-        let startMinutes: Int = 13 * 60 + 30
-        let endMinutes: Int = 14 * 60 + 30
+        let startMinutes: Int = 13 * 60 + 40
+        let endMinutes: Int = 14 * 60 + 20
         
         return nowMinutes >= startMinutes && nowMinutes <= endMinutes
-        
     }
 }
 
@@ -135,16 +134,25 @@ extension LocationManager: CLLocationManagerDelegate{
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         
         if region.identifier == "Academy"{
-            //TODO: TIRAR ESSES COMENTARIOS AO SUBIR PARA O TEST FLIGTH
-            //if isOnTime(){
-                print("ENTROU na região no horário: \(region.identifier)")
-                DispatchQueue.main.async {
-                    self.isInsideAcademy = true
+            Task{
+                guard let serverTime = try? await TimeService.shared.fetchServerTime() else {
+                    if isOnTime() { sendUserNotification() }
+                    return
                 }
-                sendUserNotification()
-            //} else {
-//                print("Entrou na região, mas fora do horário (13:30 - 14:30).")
-//            }
+                
+                let totalMinutes = serverTime.hour * 60 + serverTime.minute
+                let inicio = 13 * 60 + 40  // 13:40
+                let fim    = 14 * 60 + 20  // 14:20
+                
+                if totalMinutes >= inicio && totalMinutes <= fim {
+                    sendUserNotification()
+                }
+            }
+            
+            print("ENTROU na região no horário: \(region.identifier)")
+            DispatchQueue.main.async {
+                self.isInsideAcademy = true
+            }
         }
         
     }

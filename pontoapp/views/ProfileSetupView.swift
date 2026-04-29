@@ -17,6 +17,9 @@ struct ProfileSetupView: View {
     @State private var scaleEffect: CGFloat = 0.5
     @State private var opacity: Double = 0.0
     @State private var isUploading = false
+    @State private var isVideoReady: Bool = false
+    @State private var textOpacity: Double = 0.0
+    @State private var textOffset: CGFloat = 10.0
     
     var body: some View {
         ZStack{
@@ -34,21 +37,27 @@ struct ProfileSetupView: View {
                             .clipShape(Circle())
                             .overlay(Circle().stroke(Color.gradientStart, lineWidth: 2))
                     } else {
-                        LoopingPlayerView(videoName: "memojiVideo2", videoType: "mp4")
-                            .frame(width: 200, height: 200)
-                            .shadow(radius: 10)
+                        LoopingPlayerView(videoName: "memojiVideo2", videoType: "mp4") {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                withAnimation(.spring(response: 0.6, dampingFraction: 0.5)) {
+                                    scaleEffect = 1.0
+                                    opacity = 1.0
+                                }
+                            }
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                withAnimation(.easeOut(duration: 0.4)) {
+                                    textOpacity = 1.0
+                                    textOffset = 0
+                                }
+                            }
+                        }
+                        .frame(width: 200, height: 200)
+                        .shadow(radius: 10)
                     }
                 }
                 .opacity(opacity)
                 .scaleEffect(scaleEffect)
-                .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        withAnimation(.spring(response: 0.6, dampingFraction: 0.5, blendDuration: 0)) {
-                            scaleEffect = 1.0
-                            opacity = 0.9
-                        }
-                    }
-                }
                 
                 
                 Text("Permita o acesso a sua lista de contatos para selecionar o seu Memoji!")
@@ -56,6 +65,8 @@ struct ProfileSetupView: View {
                     .foregroundColor(.white).opacity(0.7)
                     .padding(.horizontal, 25)
                     .multilineTextAlignment(.center)
+                    .opacity(textOpacity)
+                    .offset(y: textOffset)
                 
                 Spacer()
                 
@@ -70,7 +81,21 @@ struct ProfileSetupView: View {
                                     DispatchQueue.main.async {
                                         if let imagePath = contato?.imageData,  let imageTransformed = UIImage(data: imagePath) {
                                             viewModel.saveProfileImage(profileImage: imageTransformed)
-                                            profileImage = imageTransformed
+                                            
+                                            withAnimation(.easeOut(duration: 0.25)) {
+                                                scaleEffect = 0.8
+                                                opacity = 0.0
+                                            }
+                                            
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                                scaleEffect = 0.8
+                                                profileImage = imageTransformed
+                                                
+                                                withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
+                                                    scaleEffect = 1.0
+                                                    opacity = 1.0
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -98,7 +123,7 @@ struct ProfileSetupView: View {
         }
     }
     
-
+    
 }
 
 #Preview {

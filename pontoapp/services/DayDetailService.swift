@@ -16,11 +16,11 @@ struct TimelogDetailRecord: Decodable{
 }
 
 struct TimelogDetailFields: Decodable{
-    let datetime: String
+    let createdTime: String
     let status: String
     
     enum CodingKeys: String, CodingKey {
-        case datetime
+        case createdTime = "Created Time"
         case status = "Status"
     }
 }
@@ -110,7 +110,7 @@ extension WebService{
                     return
                 }
 
-                if let date = self.isoFormatter.date(from: record.fields.datetime) {
+                if let date = self.isoFormatter.date(from: record.fields.createdTime) {
                     let timeFmt = DateFormatter()
                     timeFmt.dateFormat = "HH:mm"
                     let timeStr = timeFmt.string(from: date)

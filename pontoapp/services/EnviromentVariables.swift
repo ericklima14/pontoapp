@@ -43,4 +43,8 @@ struct EnviromentVariables {
     static var airtableApiToken: String {
         return Bundle.main.object(forInfoDictionaryKey: "AirtableToken") as? String ?? ""
     }
+    
+    static var timeZoneApi: String {
+        return Bundle.main.object(forInfoDictionaryKey: "TimeZoneApi") as? String ?? ""
+    }
 }

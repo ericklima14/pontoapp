@@ -58,6 +58,7 @@ struct SplashScreenViewWrapper: View {
     @State private var bottomPieceVisible = false
     @State private var impactScale: CGFloat = 1.0
     @AppStorage("studentId") private var studentId: String = ""
+    @AppStorage("hasSelectedMemoji") private var hasSelectedMemoji: Bool = false
 
     var body: some View {
         ZStack {
@@ -91,14 +92,13 @@ struct SplashScreenViewWrapper: View {
             VStack(spacing: 6) {
                 Spacer()
                 VStack(spacing: 6) {
-                    Text("PONTO APP")
+                    Text("STEMP")
                         .font(.system(size: 26, weight: .bold))
-                        .tracking(4)
+                        .tracking(2)
                         .foregroundColor(Color(hex: "#0A4D9A"))
 
                     Text("Apple Developer Academy")
                         .font(.system(size: 20, weight: .regular))
-                        .tracking(2)
                         .foregroundColor(Color(hex: "#999999"))
                         .textCase(.uppercase)
                 }
@@ -113,6 +113,10 @@ struct SplashScreenViewWrapper: View {
             
             registrationViewModel.loadInitialData()
 
+            if !hasSelectedMemoji {
+                VideoPreloader.shared.preload(videoName: "memojiVideo2", videoType: "mp4")
+            }
+            
             // Dispara a saída depois de 2.8s
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
                 playExit()

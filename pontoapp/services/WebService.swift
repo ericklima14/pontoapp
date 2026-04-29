@@ -259,8 +259,8 @@ class WebService: ObservableObject {
             "latitude": record.latitude,
             "longitude": record.longitude,
             "student": [record.studentId],
-            "datetime": Date.dateTimeNow(),
-            "Status": record.status.rawValue
+            "Status": record.status.rawValue,
+            "IsAtAcademy": record.isAtAcademy.rawValue
         ]
         
         if let justifyText = record.justifyText, !justifyText.isEmpty {
@@ -440,6 +440,69 @@ class WebService: ObservableObject {
                     completion(.failure(error))
                 }
 
+            }
+        }.resume()
+    }
+    
+    func fetchEventsForMonth(month: Int, year: Int, completion: @escaping (Result<[EventDetail], Error>) -> Void) {
+        let calendar = Calendar.current
+        
+        guard
+            let startOfMonth = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
+            let endOfMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth)
+        else {
+            completion(.success([]))
+            return
+        }
+        
+        let fmt = ISO8601DateFormatter()
+        fmt.formatOptions = [.withInternetDateTime]
+        let startStr = fmt.string(from: startOfMonth)
+        let endStr   = fmt.string(from: endOfMonth)
+        
+        let formula = "AND(IS_AFTER({Datetime}, '\(startStr)'), IS_BEFORE({Datetime}, '\(endStr)'))"
+        
+        var components = URLComponents(string: self.urlEventsTable)
+        components?.queryItems = [
+            URLQueryItem(name: "filterByFormula", value: formula),
+            URLQueryItem(name: "sort[0][field]", value: "Datetime"),
+            URLQueryItem(name: "sort[0][direction]", value: "asc")
+        ]
+        
+        guard let url = components?.url else {
+            completion(.failure(NSError(domain: "", code: -1)))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            if let error = error { completion(.failure(error)); return }
+            guard let data = data else { completion(.success([])); return }
+            
+            do {
+                let response = try JSONDecoder().decode(AirtableEventDetailResponse.self, from: data)
+                let isoFmt = ISO8601DateFormatter()
+                isoFmt.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                
+                let events: [EventDetail] = response.records.compactMap { record in
+                    guard let eventDate = isoFmt.date(from: record.fields.datetime) else { return nil }
+                    return EventDetail(
+                        id: record.id,
+                        name: record.fields.name,
+                        time: eventDate,
+                        icon: record.fields.icon ?? "calendar",
+                        colorHex: record.fields.colorHex,
+                        description: record.fields.description,
+                        supportMaterial: record.fields.supportMaterial,
+                        deliveryLinks: record.fields.deliveryLinks
+                    )
+                }
+                completion(.success(events))
+            } catch {
+                completion(.failure(error))
             }
         }.resume()
     }

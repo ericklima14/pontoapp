@@ -19,7 +19,6 @@ struct WelcomeView: View {
 
                 Spacer()
 
-                // Logo + título
                 VStack(spacing: 16) {
                     ZStack {
                         Image("Logo azul")
@@ -36,18 +35,19 @@ struct WelcomeView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 20))
 
                     VStack(spacing: 6) {
-                        Text("Bem-vindo ao Ponto App")
+                        Text("Bem-vindo ao Stemp!")
                             .font(.system(size: 26, weight: .bold))
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
 
-                        Text("Apple Developer Academy · Senac")
+                        Text("Apple Developer Academy - Senac")
                             .font(.system(size: 13, weight: .regular))
                             .tracking(1)
                             .foregroundColor(.white.opacity(0.4))
                             .textCase(.uppercase)
                     }
                 }
+                .padding(.top, 20)
 
                 Spacer()
 
@@ -68,8 +68,8 @@ struct WelcomeView: View {
                     FeatureCard(
                         icon: "info.circle.fill",
                         iconColor: Color.white.opacity(0.6),
-                        title: "Infos da Academy",
-                        description: "Dados e novidades da Apple Developer Academy do Senac"
+                        title: "Informações sobre Eventos",
+                        description: "Acompanhe os próximos eventos da Apple Developer Academy do Senac"
                     )
                 }
                 .padding(.horizontal, 24)
@@ -121,19 +121,6 @@ struct FeatureCard: View {
         .padding(14)
         //.background(Color.white.opacity(0.06))
         .clipShape(RoundedRectangle(cornerRadius: 14))
-    }
-}
-
-
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let r = Double((int >> 16) & 0xFF) / 255
-        let g = Double((int >> 8)  & 0xFF) / 255
-        let b = Double(int & 0xFF)          / 255
-        self.init(red: r, green: g, blue: b)
     }
 }
 

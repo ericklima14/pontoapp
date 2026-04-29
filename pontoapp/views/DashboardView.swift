@@ -34,6 +34,17 @@ struct DashboardView: View {
                         
                         if let event = viewModel.nextEvent {
                             NextEventCard(event: event)
+                        } else {
+                            ContentUnavailableView {
+                                VStack{
+                                    Image(systemName: "star.slash.fill")
+                                        .font(.system(size: 40))
+                                        .foregroundStyle(.white)
+                                    Text("Sem eventos. Novos eventos em breve!")
+                                        .font(.system(size: 15))
+                                        .foregroundStyle(.white.opacity(0.6))
+                                }
+                            }
                         }
                         
                         Spacer()

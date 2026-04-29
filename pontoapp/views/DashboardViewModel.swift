@@ -14,17 +14,14 @@ class DashboardViewModel: ObservableObject {
     @AppStorage("presences") var presences: Int = 0
     @AppStorage("absences") var absences: Int = 0
     @AppStorage("delays") var delays: Int = 0
+    @AppStorage("pendingSync") var pendingSync: Bool = false
     @AppStorage("summaryAlreadyFetched") var summaryAlredyFetched: Bool = false
     
     @Published var nextEvent: EventDetail? = nil
     @Published var isLoading: Bool = false
     
     private let webService = WebService()
-    
-    init() {
-        NotificationCenter.default.addObserver(self, selector: #selector(handleCheckIn), name: NSNotification.Name("CheckInRealizado"), object: nil)
-    }
-    
+        
     var attendanceStatus: (label: String, color: Color) {
         switch absences {
         case 0:        return ("Ótimo", Color(hex: "#1D9E75"))
@@ -32,27 +29,15 @@ class DashboardViewModel: ObservableObject {
         default:       return ("Crítico", Color(hex: "#D85A30"))
         }
     }
-    
-    @objc func handleCheckIn(notification: Notification) {
-        let status = notification.object as? RecordStatus
         
-        switch status {
-        case .present:
-            self.presences += 1
-        case .absent:
-            self.absences += 1
-        case .lated:
-            self.delays += 1
-        default:
-            return
-        }
-        
-        self.updateSummaryOnAirtable()
-    }
-    
     func loadSummary() {
         if !self.summaryAlredyFetched {
             getSummaryFromAirtable()
+        }
+        
+        if pendingSync {
+            updateSummaryOnAirtable()
+            pendingSync = false
         }
         
         fetchNextEvent()

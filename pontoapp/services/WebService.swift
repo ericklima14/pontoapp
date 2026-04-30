@@ -18,6 +18,8 @@ class WebService: ObservableObject {
         return formatter
     }()
     
+    private var calendarTask: URLSessionDataTask?
+    
     public let apiKey = EnviromentVariables.airtableApiToken
     public let urlStudentsTable = EnviromentVariables.urlStudentsTable
     public let urlTimelogTable = EnviromentVariables.urlTimelogTable
@@ -318,10 +320,12 @@ class WebService: ObservableObject {
     }
     
     func fetchCalendar(studentId: String, month: Int, year: Int, completion: @escaping (Result<[Int: RecordStatus], Error>) -> Void) {
+        calendarTask?.cancel()
+        
         var components = URLComponents(string: self.urlTimelogTable)
         
         components?.queryItems = [
-            URLQueryItem(name: "filterByFormula", value: "AND(SEARCH('\(studentId)', {Record ID (from student)} & ''), MONTH({datetime}) = \(month), YEAR({datetime}) = \(year))")
+            URLQueryItem(name: "filterByFormula", value: "AND(SEARCH('\(studentId)', {Record ID (from student)} & ''), MONTH({Created Time}) = \(month), YEAR({Created Time}) = \(year))")
         ]
         
         guard let url = components?.url else {
@@ -335,6 +339,8 @@ class WebService: ObservableObject {
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
 
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let urlError = error as? URLError, urlError.code == .cancelled { return }
+            
             if let error = error {
                 completion(.failure(error))
                 return
@@ -350,7 +356,7 @@ class WebService: ObservableObject {
                 var calendarInfos: [Int: RecordStatus] = [:]
                 
                 for record in decodedResponse.records {
-                    if let date = self.isoFormatter.date(from: record.fields.datetime) {
+                    if let date = self.isoFormatter.date(from: record.fields.createdTime) {
                         let day = Calendar.current.component(.day, from: date)
                         let status = RecordStatus(rawValue: record.fields.status)
                         

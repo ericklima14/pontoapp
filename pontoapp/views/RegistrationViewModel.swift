@@ -234,6 +234,9 @@ class RegistrationViewModel: ObservableObject {
     }
     
     func requestCheckIn(studentId: String, status: RecordStatus, location: CLLocation?, justifyText: String? = nil, files: [URL]? = nil) {
+        guard !isCheckedInToday else { return }
+        isCheckedInToday = true
+        
         let isInsideAcademy = BeaconManager.shared.isInsideAcademy
         
         var isAtAcademy: RecordLocation
@@ -273,6 +276,7 @@ class RegistrationViewModel: ObservableObject {
  
     func cancelCheckIn() {
         pendingCheckIn = nil
+        isCheckedInToday = false
     }
     
     func registerEvent(studentId: String, status: RecordStatus, location: CLLocation?, justifyText: String? = nil, files: [URL]? = nil, isAtAcademy: RecordLocation){
@@ -343,40 +347,29 @@ class RegistrationViewModel: ObservableObject {
     }
     
     func getCalendarInfos(month: Int, year: Int) {
-        print("-------- O STUDENT ID É: \(self.studentId) ---------")
-        print("-------- O STUDENT NAME É: \(self.studentName) ---------")
+        isLoadingCalendar = true
+        daysWithEvents = []
+        loadEvents(month: month, year: year)
         
-        calendarTask?.cancel()
-        
-        calendarTask = Task { @MainActor [weak self] in  // <- adiciona [weak self]
+        webService.fetchCalendar(studentId: studentId, month: month, year: year) { [weak self] result in
             guard let self = self else { return }
             
-            self.isLoadingCalendar = true
-            self.daysWithEvents = []
-            
-            guard !Task.isCancelled else { return }
-            self.loadEvents(month: month, year: year)
-            
-            self.webService.fetchCalendar(studentId: self.studentId, month: month, year: year) { [weak self] result in
-                guard let self = self, !Task.isCancelled else { return }
+            DispatchQueue.main.async {
+                self.isLoading = false
+                self.isLoadingCalendar = false
                 
-                DispatchQueue.main.async {
-                    self.isLoading = false
-                    self.isLoadingCalendar = false
+                switch result {
+                case .success(let status):
+                    self.calendarStatus = status
                     
-                    switch result {
-                    case .success(let status):
-                        self.calendarStatus = status
-                        
-                        let now = Date()
-                        if month == now.month && year == now.year {
-                            self.isCheckedInToday = (status[now.day] != nil)
-                        }
-                        
-                    case .failure(let error):
-                        self.errorMessage = error.localizedDescription
-                        self.showError = true
+                    let now = Date()
+                    if month == now.month && year == now.year {
+                        self.isCheckedInToday = self.isCheckedInToday || (status[now.day] != nil)
                     }
+                    
+                case .failure(let error):
+                    self.errorMessage = error.localizedDescription
+                    self.showError = true
                 }
             }
         }

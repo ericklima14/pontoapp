@@ -56,7 +56,7 @@ struct RulesCardView: View {
     ZStack{
         Color.bg950.ignoresSafeArea(edges: .all)
         
-        var preview = RuleCardItem(
+        let preview = RuleCardItem(
             title: "Warnings",
             icon: "exclamationmark.triangle.fill",
             color: .warning,

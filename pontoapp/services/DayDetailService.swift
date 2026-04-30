@@ -18,10 +18,12 @@ struct TimelogDetailRecord: Decodable{
 struct TimelogDetailFields: Decodable{
     let createdTime: String
     let status: String
+    let justifyText: String?
     
     enum CodingKeys: String, CodingKey {
         case createdTime = "Created Time"
         case status = "Status"
+        case justifyText = "Justify"
     }
 }
 
@@ -85,7 +87,7 @@ extension WebService{
         let startStr = formatter.string(from: startOfDay)
         let endStr   = formatter.string(from: endOfDay)
 
-        let formula = "AND(SEARCH('\(studentId)', {Record ID (from student)} & ''), IS_AFTER({datetime}, '\(startStr)'), IS_BEFORE({datetime}, '\(endStr)'))"
+        let formula = "AND(SEARCH('\(studentId)', {Record ID (from student)} & ''), IS_AFTER({Created Time}, '\(startStr)'), IS_BEFORE({Created Time}, '\(endStr)'))"
 
         var components = URLComponents(string: self.urlTimelogTable)
         components?.queryItems = [URLQueryItem(name: "filterByFormula", value: formula)]
@@ -115,7 +117,7 @@ extension WebService{
                     timeFmt.dateFormat = "HH:mm"
                     let timeStr = timeFmt.string(from: date)
                     let status  = RecordStatus(rawValue: record.fields.status) ?? .present
-                    completion(.success(CheckInDetail(time: timeStr, status: status)))
+                    completion(.success(CheckInDetail(time: timeStr, status: status, justifyText: record.fields.justifyText)))
                 } else {
                     completion(.success(nil))
                 }

@@ -18,6 +18,7 @@ struct DayDetail: Identifiable {
 struct CheckInDetail {
     let time: String      // "14:05"
     let status: RecordStatus
+    let justifyText: String?
 }
 
 struct EventDetail: Identifiable {

@@ -127,7 +127,7 @@ struct AppTabBarView: View {
             .toolbarColorScheme(.dark, for: .navigationBar)
             .tabItem {
                 Image(systemName: "person.fill.checkmark")
-                Text("Registrar")
+                Text("Registros")
             }
 
             DashboardView()

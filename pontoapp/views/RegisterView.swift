@@ -62,15 +62,15 @@ struct RegisterView: View {
                 print("📍 Slider frame: \(frame)")
                 sliderFrame = frame
             }
-            .navigationTitle("Agenda")
+            .navigationTitle("Registros")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .navigationDestination(isPresented: $justifyLate) {
                 JustifyView(titleText: "Justificar Atraso", subtitleText: "Motivo de seu atraso:") { text, files in
                     viewModel.requestCheckIn(studentId: studentId, status: .lated, location: locationManager.userLocation, justifyText: text, files: files)
                     
-                    let today = Date.now
-                    viewModel.getCalendarInfos(month: today.month, year: today.year)
+//                    let today = Date.now
+//                    viewModel.getCalendarInfos(month: today.month, year: today.year)
                     
                     justifyLate = false
                 }
@@ -79,8 +79,8 @@ struct RegisterView: View {
                 JustifyView(titleText: "Justificar Ausência", subtitleText: "Motivo de sua ausência:") { text, files in
                     viewModel.requestCheckIn(studentId: studentId, status: .absent, location: locationManager.userLocation, justifyText: text, files: files)
                     
-                    let today = Date.now
-                    viewModel.getCalendarInfos(month: today.month, year: today.year)
+//                    let today = Date.now
+//                    viewModel.getCalendarInfos(month: today.month, year: today.year)
                     
                     justifyAbstence = false
                 }
@@ -208,8 +208,8 @@ struct RegisterView: View {
                                 viewModel.showError = true
                             }
 
-                            let today = Date.now
-                            viewModel.getCalendarInfos(month: today.month, year: today.year)
+//                            let today = Date.now
+//                            viewModel.getCalendarInfos(month: today.month, year: today.year)
                         }
                     }
                 }

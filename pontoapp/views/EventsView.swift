@@ -50,7 +50,7 @@ struct EventsView: View {
             .refreshable {
                 viewModel.fetchEvents()
             }
-            .navigationTitle("Próximos Eventos")
+            .navigationTitle("Eventos")
             .onAppear {
                 viewModel.fetchEvents()
             }

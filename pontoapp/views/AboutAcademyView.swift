@@ -56,7 +56,7 @@ struct AboutAcademyView: View {
             items: [
                 AboutItem(
                     letter: "a",
-                    title: "O que é",
+                    title: "O que é o Swift Student Challenge?",
                     body: "O Swift Student Challenge é um desafio anual da Apple para estudantes desenvolvedores, onde você cria um app playground criativo que pode ser experimentado em até 3 minutos. As submissões são avaliadas por inovação, criatividade, impacto social e inclusão."
                 ),
                 AboutItem(
@@ -81,25 +81,25 @@ struct AboutAcademyView: View {
                     letter: "a",
                     title: "Cave",
                     body: "Espaço para trabalho isolado. É o momento de realizar uma tarefa sozinho, ter um insight ou tomar uma decisão. É onde o conhecimento é internalizado.",
-                    view: AnyView(LearningSpaceImageView(asset: "space_cave", color: Color(hex: "#A4C639")))
+                    view: AnyView(LearningSpaceImageView(asset: "Cave", color: Color(hex: "#A4C639")))
                 ),
                 AboutItem(
                     letter: "b",
                     title: "Watering Hole",
                     body: "Espaço de colaboração entre pares, sem um líder definido. É onde acontece o compartilhamento de informação e o aprendizado menos formal — cada participante é aluno e professor ao mesmo tempo.",
-                    view: AnyView(LearningSpaceImageView(asset: "space_wateringhole", color: Color(hex: "#3CC5D9")))
+                    view: AnyView(LearningSpaceImageView(asset: "WateringHole", color: Color(hex: "#3CC5D9")))
                 ),
                 AboutItem(
                     letter: "c",
                     title: "Campfire",
                     body: "Espaço de storytelling, com líder alternável. É onde se compartilham experiências e aprendizados através de narrativas — qualquer participante pode assumir o papel de quem conta a história.",
-                    view: AnyView(LearningSpaceImageView(asset: "space_campfire", color: Color(hex: "#F08C2F")))
+                    view: AnyView(LearningSpaceImageView(asset: "Campfire", color: Color(hex: "#F08C2F")))
                 ),
                 AboutItem(
                     letter: "d",
                     title: "Mountaintop",
                     body: "Espaço de palestra, no modelo um para muitos. É o momento de ensino formal e compartilhamento de conquistas e objetivos atingidos com toda a turma.",
-                    view: AnyView(LearningSpaceImageView(asset: "space_mountaintop", color: Color(hex: "#2C7E9C")))
+                    view: AnyView(LearningSpaceImageView(asset: "MountainTop", color: Color(hex: "#2C7E9C")))
                 )
             ]
         )

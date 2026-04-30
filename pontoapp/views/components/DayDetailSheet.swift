@@ -20,6 +20,10 @@ struct DayDetailSheet: View {
     private var isEmpty: Bool {
         detail.checkIn == nil && detail.events.isEmpty && detail.holiday == nil
     }
+    
+    private var hasJustification: Bool {
+        detail.checkIn?.justifyText != nil
+    }
 
     var body: some View {
         ZStack {
@@ -30,6 +34,14 @@ struct DayDetailSheet: View {
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
+                        
+                        //indicador de sheet
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(Color.white.opacity(0.3))
+                            .frame(width: 68, height: 4)
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 24)
+                        
                         header
 
                         if let holiday = detail.holiday {
@@ -37,6 +49,10 @@ struct DayDetailSheet: View {
                         }
 
                         checkInSection
+                        
+                        if let checkIn = detail.checkIn, let justify = checkIn.justifyText {
+                            justifySection(text: justify)
+                        }
 
                         if !detail.events.isEmpty {
                             eventsSection
@@ -47,7 +63,7 @@ struct DayDetailSheet: View {
                 }
             }
         }
-        .presentationDragIndicator(.visible)
+        .presentationDragIndicator(.hidden)
         .presentationDetents([.medium, .large])
     }
 
@@ -59,7 +75,8 @@ struct DayDetailSheet: View {
                 .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.white)
         }
-        .padding(.top, 28)
+        .padding(.top, 10)
+        .padding(.horizontal, 14)
     }
 
     // MARK: - Empty State
@@ -102,6 +119,17 @@ struct DayDetailSheet: View {
                 }
                 .padding(.vertical, 4)
             }
+        }
+    }
+    
+    //MARK: - Justify Section
+    private func justifySection(text: String) -> some View {
+        SectionCard(title: "Justificativa", icon: "text.bubble.fill") {
+            Text(text)
+                .font(.system(size: 15))
+                .foregroundStyle(.white.opacity(0.75))
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

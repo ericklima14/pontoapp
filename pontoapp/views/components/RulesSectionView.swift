@@ -102,13 +102,23 @@ struct RulesItemView: View {
                         AnyView(content)
                     }
                     
-                    Text(item.body)
-                        .font(.system(size: 13))
-                        .foregroundColor(.white.opacity(0.55))
-                        .lineSpacing(4)
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 14)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    if let attributed = try? AttributedString(markdown: item.body) {
+                        Text(attributed)
+                            .font(.system(size: 13))
+                            .foregroundColor(.white.opacity(0.55))
+                            .lineSpacing(4)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 14)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        Text(item.body)
+                            .font(.system(size: 13))
+                            .foregroundColor(.white.opacity(0.55))
+                            .lineSpacing(4)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 14)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
             }
         }

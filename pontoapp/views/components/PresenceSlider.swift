@@ -262,21 +262,21 @@ struct PresenceSlider: View {
             // MARK: Track
             RoundedRectangle(cornerRadius: 50)
                 .fill(trackColor)
-                .frame(width: 380, height: 80)
+                .frame(width: 370, height: 80)
                 .animation(.easeInOut(duration: 0.25), value: trackColor)
 
             // MARK: Shimmer
             ShimmerEmitter(isDragging: isDragging)
-                .frame(width: 380, height: 80)
+                .frame(width: 370, height: 80)
 
             // MARK: Chevrons
             ArrowEmitter(isDragging: isDragging)
-                .frame(width: 380, height: 80)
+                .frame(width: 370, height: 80)
 
             // Flash de conclusão
             RoundedRectangle(cornerRadius: 50)
                 .fill(Color.white.opacity(flashOpacity))
-                .frame(width: 380, height: 80)
+                .frame(width: 370, height: 80)
                 .allowsHitTesting(false)
 
             // MARK: Ícone direita
@@ -289,7 +289,7 @@ struct PresenceSlider: View {
                         .foregroundColor(.white.opacity(0.75))
                 }
             }
-            .frame(width: 370, height: 70)
+            .frame(width: 360, height: 70)
 
             // MARK: Ícone esquerda
             HStack {
@@ -301,7 +301,7 @@ struct PresenceSlider: View {
                 }
                 Spacer()
             }
-            .frame(width: 370, height: 70)
+            .frame(width: 360, height: 70)
 
             // MARK: Label central
             Text(userOffset.width < 0 ? "Justificar" : "Presença")

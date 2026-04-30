@@ -120,7 +120,7 @@ struct AcademyRulesView: View {
             items: [
                 RulesItem(letter: "a", title: "Advertência", body: "O descumprimento das normas poderá resultar em advertência verbal ou escrita."),
                 RulesItem(
-                    letter: "c",
+                    letter: "b",
                     title: "Warnings",
                     body: "**Obs.:** Esses são apenas alguns exemplos de como um **Warning** pode ocorrer. Cada caso é avaliado de forma específica.",
                     view: RulesCardView(ruleItem:

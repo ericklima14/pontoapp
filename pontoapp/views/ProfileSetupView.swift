@@ -75,7 +75,7 @@ struct ProfileSetupView: View {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle(tint: .gradientEnd))
                     } else {
-                        YellowButtonView(disabled: $isUploading, text: profileImage == nil ? "Permitir" : "Continuar", iconImage: nil){
+                        YellowButtonView(disabled: isUploading, text: profileImage == nil ? "Permitir" : "Continuar", iconImage: nil){
                             if profileImage == nil {
                                 ContactPicker.fetchMeCard(emailAddress: userEmailApple){ contato in
                                     DispatchQueue.main.async {

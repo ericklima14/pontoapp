@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct YellowButtonView: View {
-    @Binding var disabled: Bool
+    let disabled: Bool
     let text: String
     let iconImage: String?
-    let action: () -> Void
+    let action: () async -> Void
     private let gradientColors: LinearGradient = LinearGradient(gradient: Gradient(colors: [
             Color.gradientStart,
             Color.gradientEnd]),
@@ -29,7 +29,9 @@ struct YellowButtonView: View {
     
     var body: some View {
         Button{
-            action()
+            Task {
+                await action()
+            }
         } label: {
             HStack{
                 if let icon = iconImage {
@@ -52,7 +54,7 @@ struct YellowButtonView: View {
 }
 
 #Preview {
-    YellowButtonView(disabled: .constant(false), text: "Permitir", iconImage: "person.fill.checkmark"){
+    YellowButtonView(disabled: false, text: "Permitir", iconImage: "person.fill.checkmark"){
         
     }
 }

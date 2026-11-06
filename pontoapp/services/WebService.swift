@@ -638,7 +638,7 @@ class WebService: ObservableObject {
         }.resume()
     }
     
-    func fetchVacationDates() async throws -> [VacationDate]{
+    func fetchVacationDates() async throws -> [VacationDate] {
         guard let url = URL(string: self.urlVacationDates) else {
             throw URLError(.badURL)
         }

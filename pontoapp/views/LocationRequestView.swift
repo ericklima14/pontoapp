@@ -57,7 +57,7 @@ struct LocationRequestView: View {
                 Spacer()
                 
                 if(!$locationManager.permissionDenied.wrappedValue) {
-                    YellowButtonView(disabled: .constant(false), text: "Permitir", iconImage: nil){
+                    YellowButtonView(disabled: false, text: "Permitir", iconImage: nil){
                         LocationManager.shared.requestLocation()
                     }
                 }

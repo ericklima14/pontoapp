@@ -67,26 +67,26 @@ struct RegisterView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .navigationDestination(isPresented: $justifyLate) {
-                JustifyView(titleText: "Justificar Atraso", subtitleText: "Motivo de seu atraso:") { text, files in
+                JustifyView(titleText: "Justificar Atraso", subtitleText: "Motivo de seu atraso:") { text, attachments in
                     viewModel.requestCheckIn(
                         studentId: studentId,
                         status: .lated,
                         location: locationManager.userLocation,
                         justifyText: text,
-                        files: files
+                        attachments: attachments
                     )
                     
                     justifyLate = false
                 }
             }
             .navigationDestination(isPresented: $justifyAbstence) {
-                JustifyView(titleText: "Justificar Ausência", subtitleText: "Motivo de sua ausência:") { text, files in
+                JustifyView(titleText: "Justificar Ausência", subtitleText: "Motivo de sua ausência:") { text, attachments in
                     viewModel.requestCheckIn(
                         studentId: studentId,
                         status: .absent,
                         location: locationManager.userLocation,
                         justifyText: text,
-                        files: files
+                        attachments: attachments
                     )
                     
                     justifyAbstence = false
@@ -124,9 +124,6 @@ struct RegisterView: View {
             .onAppear {
                 viewModel.resetToCurrentMonth()
                 beaconManager.startMonitoring()
-            }
-            .task{
-                await vacation.getVacationDates()
             }
         }
     }

@@ -9,6 +9,8 @@ enum OnboardingStep: Int {
     case completed
 }
 
+
+
 struct ContentView: View {
     @AppStorage("appleID") var userId: String?
     @AppStorage("email") var email: String?

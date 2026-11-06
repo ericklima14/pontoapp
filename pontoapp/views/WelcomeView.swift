@@ -77,7 +77,7 @@ struct WelcomeView: View {
                 Spacer()
 
                 // Botão continuar
-                YellowButtonView(disabled: .constant(false), text: "Começar", iconImage: nil){
+                YellowButtonView(disabled: false, text: "Começar", iconImage: nil){
                     onContinue()
                 }
                 .padding(.bottom, 40)

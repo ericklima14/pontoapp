@@ -228,8 +228,6 @@ class RegistrationViewModel: ObservableObject {
             return "Estamos em férias, até \(fimFerias)."
         }
         
-        let next = nextValidDay()
-        
         if calendar.isDateInTomorrow(next) {
             return "Volte amanhã às 13:40 para bater seu ponto"
         }
@@ -308,7 +306,7 @@ class RegistrationViewModel: ObservableObject {
         }
     }
     
-    func requestCheckIn(studentId: String, status: RecordStatus, location: CLLocation?, justifyText: String? = nil, files: [URL]? = nil) {
+    func requestCheckIn(studentId: String, status: RecordStatus, location: CLLocation?, justifyText: String? = nil, attachments: [AttachmentModel]? = nil) {
         
         guard !hasAlreadyCheckedInToday() else { return }
         checkedInDay = referenceDate
@@ -330,7 +328,7 @@ class RegistrationViewModel: ObservableObject {
                 status: status,
                 location: location,
                 justifyText: justifyText,
-                files: files,
+                attachments: attachments,
                 isAtAcademy: isAtAcademy
             )
         }
@@ -355,7 +353,7 @@ class RegistrationViewModel: ObservableObject {
         checkedInDay = nil
     }
     
-    func registerEvent(studentId: String, status: RecordStatus, location: CLLocation?, justifyText: String? = nil, files: [URL]? = nil, isAtAcademy: RecordLocation){
+    func registerEvent(studentId: String, status: RecordStatus, location: CLLocation?, justifyText: String? = nil, attachments: [AttachmentModel]? = nil, isAtAcademy: RecordLocation){
         guard let location = location else{
             DispatchQueue.main.async {
                 self.errorMessage = "Localização não encontrada"
@@ -368,8 +366,8 @@ class RegistrationViewModel: ObservableObject {
             self.isLoading = true
         }
         
-        if let files = files, !files.isEmpty {
-            uploadFilesToDropbox(files: files){ [weak self] dropboxFiles in
+        if let files = attachments, !files.isEmpty {
+            uploadFilesToDropbox(attachments: files){ [weak self] dropboxFiles in
                 DispatchQueue.main.async {
                     self?.sendToAirtable(studentId: studentId, status: status, location: location, justifyText: justifyText, fileLinks: dropboxFiles, isAtAcademy: isAtAcademy)
                 }
@@ -381,33 +379,18 @@ class RegistrationViewModel: ObservableObject {
         }
     }
     
-    func uploadFilesToDropbox(files: [URL], completion: @escaping ([String]) -> Void){
+    func uploadFilesToDropbox(attachments: [AttachmentModel], completion: @escaping ([String]) -> Void){
         let group = DispatchGroup()
         var uploadedLinks: [String] = []
         
-        for file in files {
+        for file in attachments {
             group.enter()
-            let accessGranted = file.startAccessingSecurityScopedResource()
             
-            do{
-                let fileData = try Data(contentsOf: file)
-                let fileName = file.lastPathComponent
+            dropboxService.uploadFileAndGetLink(studentId: self.studentId, studentName: self.studentName, fileData: file.data, fileName: file.name){ link in
+                if let link = link{
+                    uploadedLinks.append(link)
+                }
                 
-                dropboxService.uploadFileAndGetLink(studentId: self.studentId, studentName: self.studentName, fileData: fileData, fileName: fileName){ link in
-                    if let link = link{
-                        uploadedLinks.append(link)
-                    }
-                    
-                    if accessGranted{
-                        file.stopAccessingSecurityScopedResource()
-                    }
-                    group.leave()
-                }
-            } catch {
-                print("Erro ao ler arquivo local: \(error.localizedDescription)")
-                if accessGranted {
-                    file.stopAccessingSecurityScopedResource()
-                }
                 group.leave()
             }
         }

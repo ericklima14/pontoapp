@@ -141,7 +141,7 @@ struct OnboardingOverlayView: View {
             
             // Botão abaixo do slider
             YellowButtonView(
-                disabled: .constant(false),
+                disabled: false,
                 text: currentTutorialStep == .tutorialPresence ? "Próximo" : "Entendi!",
                 iconImage: nil
             ) {

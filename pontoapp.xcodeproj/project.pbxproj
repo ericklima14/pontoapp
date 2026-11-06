@@ -409,7 +409,6 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-                
 				MARKETING_VERSION = 1.2.7;
 				PRODUCT_BUNDLE_IDENTIFIER = br.com.joaocarloslima.pontoapp2;
 				PRODUCT_NAME = "$(TARGET_NAME)";

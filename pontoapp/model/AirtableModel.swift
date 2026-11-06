@@ -7,11 +7,12 @@
 
 import Foundation
 
-struct AirtableResponse<Fields: Codable>: Codable {
+struct AirtableResponse<Fields: Decodable>: Decodable {
     let records: [AirtableRecord<Fields>]
+    let offset: String?
 }
 
-struct AirtableRecord<Fields: Codable>: Codable, Identifiable {
+struct AirtableRecord<Fields: Decodable>: Decodable, Identifiable {
     let id: String
     let fields: Fields
     let createdTime: String

@@ -8,19 +8,31 @@
 import SwiftUI
 
 struct FileRowView: View {
-    let url: URL
+    let attachment: AttachmentModel
+    
+    private var icon: String {
+        switch attachment.type {
+        case let type where type.conforms(to: .image):
+            return "photo"
+        case .pdf:
+            return "text.document"
+        default:
+            return "document"
+        }
+    }
+    
     var onRemove: () -> Void
     let gradientColors: LinearGradient = LinearGradient(gradient: Gradient(colors: [.gradientStart, .gradientEnd]), startPoint: .leading, endPoint: .trailing)
     
     var body: some View {
         HStack(alignment: .center) {
             Spacer()
-            Image(systemName: "doc.fill")
+            Image(systemName: icon)
                 .foregroundStyle(gradientColors)
                 .font(.title3)
             
             VStack(alignment: .leading) {
-                Text(url.lastPathComponent)
+                Text(attachment.name)
                     .font(.subheadline)
                     .foregroundStyle(.white)
                     .lineLimit(1)
@@ -47,7 +59,7 @@ struct FileRowView: View {
 }
 
 #Preview {
-    FileRowView(url: URL(filePath: "alguma-url.pdf")){
+    FileRowView(attachment: AttachmentModel(name: "alguma coisa", data: Data(), type: .pdf)){
         
     }
 }

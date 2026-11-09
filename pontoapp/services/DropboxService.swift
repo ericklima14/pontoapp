@@ -7,12 +7,53 @@
 
 import Foundation
 
-class DropboxService {
+enum UploadError: LocalizedError {
+    case invalidURL
+    case uploadFailed
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL:
+            return "Algo deu errado. Tente Novamente! (Invalid URL - DropBox)"
+        case .uploadFailed:
+            return "Não foi possível carregar o arquivo. Tente Novamente! (Upload Failed - Dropbox)"
+        }
+    }
+}
+
+class DropboxService: AttachmentUploaderProtocol {
+    private let studentID: String
+    private let studentName: String
+    
     private let apiKey = EnviromentVariables.dropboxApiKey
     private let appSecret = EnviromentVariables.dropboxAppSecret
     private let acessToken = EnviromentVariables.dropboxAcessToken
     private let refreshToken = EnviromentVariables.dropboxRefreshToken
-
+    
+    init(studentID: String = UserVariables.studentID, studentName: String = UserVariables.name) {
+        self.studentID = studentID
+        self.studentName = studentName
+    }
+    
+    
+    func upload(attachment: AttachmentModel) async throws -> URL {
+        try await withCheckedThrowingContinuation { continuation in
+            uploadFileAndGetLink(studentId: studentID, studentName: studentName, fileData: attachment.data, fileName: attachment.name) { value in
+                
+                guard let value else {
+                    return continuation.resume(throwing: UploadError.uploadFailed)
+                }
+                
+                if let url = URL(string: value){
+                    continuation.resume(returning: url)
+                } else {
+                    continuation.resume(throwing: UploadError.invalidURL)
+                }
+            }
+        }
+    }
+    
+    
     private func getRefreshToken(completion: @escaping(String?) -> Void){
         let url = URL(string: "https://api.dropbox.com/oauth2/token")!
         var request = URLRequest(url: url)
@@ -70,20 +111,20 @@ class DropboxService {
         request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
         
         let uniqueFileName = "\(UUID().uuidString)_\(fileName)"
-
+        
         let sanitizedName = studentName.trimingWhitespaces()
         let fullPath = "/\(Date.classDurationInYears())/\(sanitizedName)-\(studentId)/\(uniqueFileName)"
-
+        
         let args: [String: Any] = [
             "path": fullPath,
             "mode": "add",
             "autorename": true,
             "mute": false
         ]
-
+        
         if let jsonData = try? JSONSerialization.data(withJSONObject: args, options: []),
            let jsonString = String(data: jsonData, encoding: .utf8) {
-               request.setValue(jsonString, forHTTPHeaderField: "Dropbox-API-Arg")
+            request.setValue(jsonString, forHTTPHeaderField: "Dropbox-API-Arg")
         }
         
         request.httpBody = data
@@ -133,7 +174,7 @@ class DropboxService {
             
             if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
                let urlString = json["url"] as? String {
-
+                
                 let directLink = urlString.replacingOccurrences(of: "dl=0", with: "dl=1")
                 completion(directLink)
             } else {

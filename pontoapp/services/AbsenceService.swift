@@ -14,9 +14,11 @@ private struct AbsenceFields: Decodable {
 class AbsenceService: AbsenceServiceProtocol {
     
     private let client: AirtableClientProtocol
+    private let uploader: AttachmentUploaderProtocol
     
-    init(client: AirtableClientProtocol = AirtableClient()) {
+    init(client: AirtableClientProtocol = AirtableClient(), uploader: AttachmentUploaderProtocol = DropboxService()) {
         self.client = client
+        self.uploader = uploader
     }
     
     func fetchPendingAbsences(studentID: String) async throws -> [PendingAbsence] {
@@ -45,14 +47,17 @@ class AbsenceService: AbsenceServiceProtocol {
         var fields: [String: Any] = [
             "Justify": justify
         ]
-//        
-//        if !files.isEmpty {
-//            let attachments = files.map { url in
-//                return ["url": url.]
-//            }
-//            
-//            fields["Attach"] = attachments
-//        }
+        
+        if !attachments.isEmpty {
+            var uploadedURLs: [[String: String]] = []
+            
+            for attachment in attachments {
+                let link = try await uploader.upload(attachment: attachment)
+                uploadedURLs.append(["url": link.absoluteString])
+            }
+            
+            fields["Attach"] = uploadedURLs
+        }
         
         try await client.update(.timelog, recordID: recordID, fields: fields)
     }

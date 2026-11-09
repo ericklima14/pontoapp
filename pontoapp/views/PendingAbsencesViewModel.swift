@@ -6,22 +6,6 @@
 //
 import Foundation
 
-enum UserVariables {
-//    static var appleID: String?
-//    static var email: String?
-//    static var name: String?
-//    static var hasSelectedMemoji: Bool = false
-//    static var hasCompletedFirstCheckIn: Bool = false
-//    static var hasCompletedTutorial: Bool = false
-//    static var hasSeenWelcome: Bool = false
-//    static var memoji: String = ""
-    static var studentID: String {
-        get { UserDefaults.standard.string(forKey: "studentId") ?? "" }
-        set { UserDefaults.standard.set(newValue, forKey: "studentId") }
-    }
-    //static var userID: String?
-}
-
 @Observable
 @MainActor
 class PendingAbsencesViewModel {

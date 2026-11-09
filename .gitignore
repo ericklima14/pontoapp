@@ -1,0 +1,44 @@
+# Xcode
+.DS_Store
+*.swp
+*.xcuserstate
+xcuserdata/
+*.xcconfig
+
+# Build artifacts
+build/
+DerivedData/
+
+# Swift Package Manager
+/.swiftpm
+/.build
+
+# CocoaPods
+Pods/
+*.lock
+
+# Carthage
+Carthage/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# Archives
+*.xcarchive
+
+# Swift Playgrounds
+playground.xcworkspace/
+
+# Logs
+*.log
+
+# Generated Files
+*.hmap
+*.ipa
+*.dSYM/
+
+# xcframeworks
+*.xcframework

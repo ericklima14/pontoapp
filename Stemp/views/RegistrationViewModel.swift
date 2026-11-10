@@ -49,7 +49,7 @@ class RegistrationViewModel: ObservableObject {
     @Published private(set) var checkedInDay: Date? = nil
     private var serverOffset: TimeInterval = 0
     
-    private let maxPlausibleOffset: TimeInterval = 10 //10 minutos
+    private let maxPlausibleOffset: TimeInterval = 10 * 60 //10 minutos
 
     private let openMinutes:   Int = 13 * 60 + 40   // 13:40
     private let closeMinutes:  Int = 18 * 60        // 18:00

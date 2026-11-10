@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "2620"
+   LastUpgradeVersion = "2710"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -18,7 +18,7 @@
                BlueprintIdentifier = "570E12C22CDAD00300A4C012"
                BuildableName = "Stemp.app"
                BlueprintName = "Stemp"
-               ReferencedContainer = "container:pontoapp.xcodeproj">
+               ReferencedContainer = "container:Stemp.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -47,7 +47,7 @@
             BlueprintIdentifier = "570E12C22CDAD00300A4C012"
             BuildableName = "Stemp.app"
             BlueprintName = "Stemp"
-            ReferencedContainer = "container:pontoapp.xcodeproj">
+            ReferencedContainer = "container:Stemp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -64,7 +64,7 @@
             BlueprintIdentifier = "570E12C22CDAD00300A4C012"
             BuildableName = "Stemp.app"
             BlueprintName = "Stemp"
-            ReferencedContainer = "container:pontoapp.xcodeproj">
+            ReferencedContainer = "container:Stemp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

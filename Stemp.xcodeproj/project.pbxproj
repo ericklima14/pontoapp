@@ -12,9 +12,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		571C198F2CDD3F5E0027CF54 /* Exceptions for "pontoapp" folder in "Stemp" target */ = {
+		571C198F2CDD3F5E0027CF54 /* Exceptions for "Stemp" folder in "Stemp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				ConfigDEV.xcconfig,
+				ConfigPROD.xcconfig,
 				Info.plist,
 			);
 			target = 570E12C22CDAD00300A4C012 /* Stemp */;
@@ -22,6 +24,7 @@
 		D32084682FA3208200699195 /* Exceptions for "StempTV" folder in "StempTV" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				"Config-STEMPTV.xcconfig",
 				Info.plist,
 			);
 			target = D32084242FA318E900699195 /* StempTV */;
@@ -29,12 +32,12 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		570E12C52CDAD00300A4C012 /* pontoapp */ = {
+		570E12C52CDAD00300A4C012 /* Stemp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				571C198F2CDD3F5E0027CF54 /* Exceptions for "pontoapp" folder in "Stemp" target */,
+				571C198F2CDD3F5E0027CF54 /* Exceptions for "Stemp" folder in "Stemp" target */,
 			);
-			path = pontoapp;
+			path = Stemp;
 			sourceTree = "<group>";
 		};
 		D32084262FA318E900699195 /* StempTV */ = {
@@ -68,7 +71,7 @@
 		570E12BA2CDAD00300A4C012 = {
 			isa = PBXGroup;
 			children = (
-				570E12C52CDAD00300A4C012 /* pontoapp */,
+				570E12C52CDAD00300A4C012 /* Stemp */,
 				D32084262FA318E900699195 /* StempTV */,
 				570E12C42CDAD00300A4C012 /* Products */,
 			);
@@ -99,7 +102,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				570E12C52CDAD00300A4C012 /* pontoapp */,
+				570E12C52CDAD00300A4C012 /* Stemp */,
 			);
 			name = Stemp;
 			packageProductDependencies = (
@@ -138,7 +141,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2640;
-				LastUpgradeCheck = 2600;
+				LastUpgradeCheck = 2710;
 				TargetAttributes = {
 					570E12C22CDAD00300A4C012 = {
 						CreatedOnToolsVersion = 16.1;
@@ -148,7 +151,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 570E12BE2CDAD00300A4C012 /* Build configuration list for PBXProject "pontoapp" */;
+			buildConfigurationList = 570E12BE2CDAD00300A4C012 /* Build configuration list for PBXProject "Stemp" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -205,7 +208,7 @@
 /* Begin XCBuildConfiguration section */
 		570E12CF2CDAD00500A4C012 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReferenceAnchor = 570E12C52CDAD00300A4C012 /* pontoapp */;
+			baseConfigurationReferenceAnchor = 570E12C52CDAD00300A4C012 /* Stemp */;
 			baseConfigurationReferenceRelativePath = ConfigDEV.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -272,7 +275,7 @@
 		};
 		570E12D02CDAD00500A4C012 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReferenceAnchor = 570E12C52CDAD00300A4C012 /* pontoapp */;
+			baseConfigurationReferenceAnchor = 570E12C52CDAD00300A4C012 /* Stemp */;
 			baseConfigurationReferenceRelativePath = ConfigPROD.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -332,20 +335,20 @@
 		};
 		570E12D22CDAD00500A4C012 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReferenceAnchor = 570E12C52CDAD00300A4C012 /* pontoapp */;
-			baseConfigurationReferenceRelativePath = ConfigDEV.xcconfig;
+			baseConfigurationReferenceAnchor = 570E12C52CDAD00300A4C012 /* Stemp */;
+			baseConfigurationReferenceRelativePath = ConfigPROD.xcconfig;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppPontoSenac;
+				ASSETCATALOG_COMPILER_APPICON_NAME = Stemp;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_ENTITLEMENTS = pontoapp/pontoapp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Stemp/stempApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_ASSET_PATHS = "\"pontoapp/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Stemp/Preview Content\"";
 				DEVELOPMENT_TEAM = 377T5F577W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "${SRCROOT}/pontoapp/Info.plist";
+				INFOPLIST_FILE = "${SRCROOT}/Stemp/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Stemp;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Precisamos usar o seu bluetooth para registro do seu ponto";
@@ -378,20 +381,20 @@
 		};
 		570E12D32CDAD00500A4C012 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReferenceAnchor = 570E12C52CDAD00300A4C012 /* pontoapp */;
+			baseConfigurationReferenceAnchor = 570E12C52CDAD00300A4C012 /* Stemp */;
 			baseConfigurationReferenceRelativePath = ConfigPROD.xcconfig;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppPontoSenac;
+				ASSETCATALOG_COMPILER_APPICON_NAME = Stemp;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				CODE_SIGN_ENTITLEMENTS = pontoapp/pontoapp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Stemp/stempApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_ASSET_PATHS = "\"pontoapp/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Stemp/Preview Content\"";
 				DEVELOPMENT_TEAM = 377T5F577W;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "${SRCROOT}/pontoapp/Info.plist";
+				INFOPLIST_FILE = "${SRCROOT}/Stemp/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Stemp;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Precisamos usar o seu bluetooth para registro do seu ponto";
@@ -424,6 +427,8 @@
 		};
 		D320842D2FA318EA00699195 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = D32084262FA318E900699195 /* StempTV */;
+			baseConfigurationReferenceRelativePath = "Config-STEMPTV.xcconfig";
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -456,6 +461,8 @@
 		};
 		D320842E2FA318EA00699195 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = D32084262FA318E900699195 /* StempTV */;
+			baseConfigurationReferenceRelativePath = "Config-STEMPTV.xcconfig";
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -489,7 +496,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		570E12BE2CDAD00300A4C012 /* Build configuration list for PBXProject "pontoapp" */ = {
+		570E12BE2CDAD00300A4C012 /* Build configuration list for PBXProject "Stemp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				570E12CF2CDAD00500A4C012 /* Debug */,

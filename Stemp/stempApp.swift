@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct PontoApp: App {
+struct Stemp: App {
 
     @State private var showSplash = true
     @State private var contentOpacity: Double = 0
